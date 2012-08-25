@@ -114,6 +114,7 @@ class InGame(AppState):
     def reset(self):
         self.player = Player(self.app.screen_w / 2, self.app.screen_h / 2)
         self.background = pygame.Surface(self.app.screen.get_size())
+        self.background.fill((200,200,200))
 
         # spawn some edibles
         for i in xrange(10):
