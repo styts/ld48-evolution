@@ -8,8 +8,8 @@ class Sea(object):
     sprites = []
 
     def __init__(self):
-        self.sprites.append(pygame.image.load(resource_path('data/sprites/sea1.png')))
-        self.sprites.append(pygame.image.load(resource_path('data/sprites/sea2.png')))
+        self.sprites.append(pygame.image.load(resource_path('data/sprites/sea1.png')).convert_alpha())
+        self.sprites.append(pygame.image.load(resource_path('data/sprites/sea2.png')).convert_alpha())
 
         self.cur_sprite = None
         self.x = -150
@@ -25,7 +25,7 @@ class Sea(object):
             self._i = 1 if not self._i else 0
 
     def draw(self, screen):
-        spr = self.sprites[self._i]  # cycle(Sea.sprites).next()
+        spr = self.sprites[self._i]
         screen.blit(spr, (self.x, 0))
         screen.fill((25, 123, 192), pygame.Rect(0, 0, self.x, screen.get_height()))
 
