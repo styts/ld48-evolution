@@ -4,6 +4,32 @@ import math
 import random
 
 
+class Sea(object):
+    sprites = []
+
+    def __init__(self):
+        self.sprites.append(pygame.image.load(resource_path('data/sprites/sea1.png')))
+        self.sprites.append(pygame.image.load(resource_path('data/sprites/sea2.png')))
+
+        self.cur_sprite = None
+        self.x = -150
+
+    def flood(self):
+        self.x = -150
+        self.speed = 5
+        self._i = 0  # sprite index
+
+    def process(self):
+        self.x += self.speed
+        if random.randint(0, 10) == 0:  # once in a while, flip the sprite
+            self._i = 1 if not self._i else 0
+
+    def draw(self, screen):
+        spr = self.sprites[self._i]  # cycle(Sea.sprites).next()
+        screen.blit(spr, (self.x, 0))
+        screen.fill((25, 123, 192), pygame.Rect(0, 0, self.x, screen.get_height()))
+
+
 class Safehouse(object):
     a = 100
 
@@ -130,8 +156,8 @@ class InGame(AppState):
         if r == 0:
             self._spawn_edible()
 
-        # safehouse
         self.safehouse.process()
+        self.sea.process()
 
         return super(InGame, self).process()
 
@@ -154,10 +180,13 @@ class InGame(AppState):
         self.background.fill((200, 200, 200))
 
         self.safehouse = Safehouse(self.app.screen_w / 2 - Safehouse.a / 2, self.app.screen_h / 2 - Safehouse.a / 2)
+        self.sea = Sea()
 
         # spawn some edibles
         for i in xrange(10):
             self._spawn_edible()
+
+        self.sea.flood()
 
     def process_input(self, event):
         # quit to menu - ESC
@@ -173,3 +202,4 @@ class InGame(AppState):
             e.draw(self.app.screen)
 
         self.player.draw(self.app)
+        self.sea.draw(self.app.screen)
