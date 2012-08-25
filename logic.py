@@ -21,12 +21,13 @@ class Edible(object):
 class Player(object):
 
     def __init__(self, x, y):
-        self.sprite = pygame.image.load(resource_path("data/sprites/player.png"))
+        self.sprite = pygame.image.load(resource_path("data/sprites/player.png")).convert_alpha()
         self.x = x
         self.y = y
         self.x_vel = 0
         self.y_vel = 0
         self.angle = 0
+        self.color = (255, 255, 255)
 
     def process(self):
         keys = pygame.key.get_pressed()
@@ -72,8 +73,12 @@ class Player(object):
     def can_eat(self, rect):
         return self.get_rect().colliderect(rect)
 
+    def eat(self, edible):
+        self.color = edible.color  # todo
+
     def draw(self, app):
         rot_sprite = pygame.transform.rotate(self.sprite, self.angle)
+        rot_sprite.fill(self.color, None, pygame.BLEND_RGBA_MULT)
         app.screen.blit(rot_sprite, (self.x, self.y))
         #pygame.draw.line(app.screen, (255, 0, 0), (self.x, self.y), (self.x + self.x_vel, self.y + self.y_vel))
         #pygame.draw.rect(app.screen, (250, 0, 0), self.get_rect(), 1)
@@ -89,7 +94,7 @@ class InGame(AppState):
 
         for e in self.edibles:
             if self.player.can_eat(e.get_rect()):
-                # ate!
+                self.player.eat(e)
                 self.edibles.remove(e)
 
         # randomly add edibles sometimes
