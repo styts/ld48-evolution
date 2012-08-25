@@ -60,6 +60,11 @@ class MainMenu(AppState):
 
 
 class InGame(AppState):
+    def process_input(self, event):
+        # quit to menu - ESC
+        if event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE:
+            self.next_state = ("GoodBye", None)
+
     def draw(self):
         pass
 
