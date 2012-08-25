@@ -1,6 +1,17 @@
 from utils import AppState, resource_path
 import pygame
 import math
+import random
+
+
+class Edible(object):
+    def __init__(self, x, y, color):
+        self.x = x
+        self.y = y
+        self.color = color
+
+    def draw(self, screen):
+        pygame.draw.circle(screen, self.color, (self.x - 5, self.y - 5), 10, 1)
 
 
 class Player(object):
@@ -58,13 +69,26 @@ class Player(object):
 
 
 class InGame(AppState):
+    edibles = []
+
     def process(self):
         self.player.process()
         return super(InGame, self).process()
 
+    def _spawn_edible(self):
+        x = random.randint(0, self.app.screen_w)
+        y = random.randint(0, self.app.screen_h)
+        color = (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255))
+        e = Edible(x, y, color)
+        self.edibles.append(e)
+
     def reset(self):
         self.player = Player(self.app.screen_w / 2, self.app.screen_h / 2)
         self.background = pygame.Surface(self.app.screen.get_size())
+
+        # spawn edibles
+        for i in xrange(10):
+            self._spawn_edible()
 
     def process_input(self, event):
         # quit to menu - ESC
@@ -73,4 +97,8 @@ class InGame(AppState):
 
     def draw(self):
         self.app.screen.blit(self.background, (0, 0))
+
+        for e in self.edibles:
+            e.draw(self.app.screen)
+
         self.player.draw(self.app)
