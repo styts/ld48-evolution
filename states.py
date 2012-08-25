@@ -41,7 +41,7 @@ class InGame(AppState):
 
         # test death by sea
         pr = self.player.get_rect()
-        if pr.x < self.sea.x and not self.player.is_safe():
+        if self.sea.sea_alpha == 255 and pr.x < self.sea.x and not self.player.is_safe():
             self.next_state = ("DeathBySea", None)
 
         return super(InGame, self).process()
