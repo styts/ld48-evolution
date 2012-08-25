@@ -32,6 +32,7 @@ class App():
         self._appstates.append(InGame(self))
 
         self.appstate = self._get_appstate("InGame")
+        self.appstate.reset()
 
         ## Main Loop
         while self.is_running:
