@@ -68,6 +68,7 @@ class Player(object):
 class InGame(AppState):
     def process(self):
         self.player.process()
+        return super(InGame, self).process()
 
     def reset(self):
         self.player = Player(self.app.screen_w / 2, self.app.screen_h / 2)
