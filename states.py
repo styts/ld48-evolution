@@ -31,13 +31,15 @@ class InGame(AppState):
             self._spawn_edible()
 
         self.safehouse.process()
-        self.sea.process()
+        sp = self.sea.process()
+        if not sp:
+            self.semi_reset()
 
         # decrement sea counter
         self.sea_counter -= 1
         if self.sea_counter <= 0:
             self.sea.flood()
-            self.sea_counter = 30 * 30
+            self.sea_counter = FLOOD_TIME * 30
 
         # test death by sea
         pr = self.player.get_rect()
@@ -58,20 +60,23 @@ class InGame(AppState):
         e = Edible(x, y, name)
         self.edibles.append(e)
 
-    def reset(self):
-        self.edibles = []
-        self.player = Player(self.app.screen_w / 2 - 32, self.app.screen_h / 2 - 32)
-        self.background = pygame.Surface(self.app.screen.get_size())
-        self.background.fill((200, 200, 200))
-
+    def semi_reset(self):
         self.safehouse = Safehouse(self.app.screen_w / 2 - Safehouse.a / 2, self.app.screen_h / 2 - Safehouse.a / 2)
-        self.sea = Sea(self.app)
+        self.sea_counter = FLOOD_TIME * 30
 
-        self.sea_counter = 3 * 30
+        self.edibles = []
 
         # spawn some edibles
         for i in xrange(10):
             self._spawn_edible()
+
+    def reset(self):
+        self.player = Player(self.app.screen_w / 2 - 32, self.app.screen_h / 2 - 32)
+        self.background = pygame.Surface(self.app.screen.get_size())
+        self.background.fill((200, 200, 200))
+
+        self.sea = Sea(self.app)
+        self.semi_reset()
 
     def process_input(self, event):
         # quit to menu - ESC
@@ -89,5 +94,6 @@ class InGame(AppState):
 
         self.player.draw(self.app)
 
-        f_ren = self.app.font.render("Flood: %s" % (self.sea_counter / 30), False, (0, 0, 50))
-        self.app.screen.blit(f_ren, (150, 5))
+        if not self.sea.flooding:
+            f_ren = self.app.font.render("Flood: %s" % (self.sea_counter / 30), False, (0, 0, 50))
+            self.app.screen.blit(f_ren, (150, 5))

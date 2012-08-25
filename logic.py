@@ -3,6 +3,8 @@ import pygame
 import math
 import random
 
+FLOOD_TIME = 30
+
 
 class Sea(object):
     sprites = []
@@ -19,8 +21,10 @@ class Sea(object):
         self.sea_alpha = 255
         self.speed = 0
         self._i = 0
+        self.flooding = False
 
     def flood(self):
+        self.flooding = True
         self.x = -150
         self.speed = 10
         self._i = 0  # sprite index
@@ -33,6 +37,11 @@ class Sea(object):
         if self.x > self.solidsea.get_width():
             self.sea_alpha -= 5
             self.solidsea.set_alpha(max(0, self.sea_alpha))
+        if self.sea_alpha == 250:
+            self.flooding = False
+            return False
+        else:
+            return True
 
     def draw(self, screen):
         if self.x > self.solidsea.get_width():
@@ -47,10 +56,21 @@ class Sea(object):
 
 
 class Safehouse(object):
+    colors = [
+        (120, 40, 40),  # r
+        (40, 120, 40),  # g
+        (40, 40, 120),  # b
+        (40, 120, 120),
+        (120, 40, 120),
+        (120, 120, 40),
+        (40, 180, 180),
+        (180, 40, 180),
+        (180, 180, 40),
+    ]
     a = 100
 
     def __init__(self, x, y):
-        self.color = (40, 80, 40)
+        self.color = random.choice(Safehouse.colors)
         self.r = pygame.Rect(x, y, Safehouse.a, Safehouse.a)
         self.lock = pygame.image.load(resource_path('data/sprites/lock.png')).convert_alpha()
 
@@ -64,7 +84,7 @@ class Safehouse(object):
 
 
 class Edible(object):
-    colors = {'cherry': (50, -20, -20), 'berry': (-20, -20, 50), 'lime': (-20, 50, -20)}
+    colors = {'cherry': (40, -20, -20), 'berry': (-20, -20, 40), 'lime': (-20, 40, -20)}
     sprites = {'cherry': pygame.image.load(resource_path('data/sprites/cherry.png')),
                'berry': pygame.image.load(resource_path('data/sprites/berry.png')),
                'lime': pygame.image.load(resource_path('data/sprites/lime.png'))}
