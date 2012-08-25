@@ -5,16 +5,24 @@ import random
 
 
 class Edible(object):
-    def __init__(self, x, y, color):
+    colors = {'cherry': (50, -20, -20), 'berry': (-20, -20, 50), 'lime': (-20, 50, -20)}
+    sprites = {'cherry': pygame.image.load(resource_path('data/sprites/cherry.png')),
+               'berry': pygame.image.load(resource_path('data/sprites/berry.png')),
+               'lime': pygame.image.load(resource_path('data/sprites/lime.png'))}
+
+    def __init__(self, x, y, name):
         self.x = x
         self.y = y
-        self.color = color
+        self.color = Edible.colors[name]
+        self.name = name
+        self.sprite = Edible.sprites[name]
 
     def get_rect(self):
-        return pygame.Rect(self.x - 5, self.y - 5, 10, 10)
+        # just a center point actually
+        return pygame.Rect(self.x + 12, self.y + 12, 1, 1)  # 24: sprite width
 
     def draw(self, screen):
-        pygame.draw.circle(screen, self.color, (self.x, self.y), 10, 0)
+        screen.blit(self.sprite, (self.x, self.y))
         #pygame.draw.rect(screen, self.color, self.get_rect(), 1)
 
 
@@ -27,7 +35,8 @@ class Player(object):
         self.x_vel = 0
         self.y_vel = 0
         self.angle = 0
-        self.color = (255, 255, 255)
+        self.color = (0, 0, 0)
+        #self.color = (255, 255, 255)
 
     def process(self):
         keys = pygame.key.get_pressed()
@@ -71,10 +80,14 @@ class Player(object):
         return pygame.Rect(self.x, self.y, self.sprite.get_width(), self.sprite.get_height())
 
     def can_eat(self, rect):
-        return self.get_rect().colliderect(rect)
+        return self.get_rect().contains(rect)
 
     def eat(self, edible):
-        self.color = edible.color  # todo
+        def n(colval):
+            return max(0, min(255, colval))
+        r, g, b = edible.color
+        sr, sg, sb = self.color
+        self.color = (n(sr + r), n(sg + g), n(sb + b))
 
     def draw(self, app):
         rot_sprite = pygame.transform.rotate(self.sprite, self.angle)
@@ -107,8 +120,9 @@ class InGame(AppState):
     def _spawn_edible(self):
         x = random.randint(0, self.app.screen_w)
         y = random.randint(0, self.app.screen_h)
-        color = (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255))
-        e = Edible(x, y, color)
+        #color = (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255))
+        name = Edible.colors.keys()[random.randint(0, Edible.colors.keys().__len__() - 1)]
+        e = Edible(x, y, name)
         self.edibles.append(e)
 
     def reset(self):
