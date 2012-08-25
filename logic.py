@@ -14,8 +14,8 @@ class Edible(object):
         return pygame.Rect(self.x - 5, self.y - 5, 10, 10)
 
     def draw(self, screen):
-        pygame.draw.circle(screen, self.color, (self.x, self.y), 10, 1)
-        pygame.draw.rect(screen, self.color, self.get_rect(), 1)
+        pygame.draw.circle(screen, self.color, (self.x, self.y), 10, 0)
+        #pygame.draw.rect(screen, self.color, self.get_rect(), 1)
 
 
 class Player(object):
@@ -75,10 +75,10 @@ class Player(object):
     def draw(self, app):
         rot_sprite = pygame.transform.rotate(self.sprite, self.angle)
         app.screen.blit(rot_sprite, (self.x, self.y))
-        pygame.draw.line(app.screen, (255, 0, 0), (self.x, self.y), (self.x + self.x_vel, self.y + self.y_vel))
-        pygame.draw.rect(app.screen, (250, 0, 0), self.get_rect(), 1)
-        font_ren = app.font.render("%s" % self.angle, False, (200, 200, 200))
-        app.screen.blit(font_ren, (self.x - 30, self.y - 30))
+        #pygame.draw.line(app.screen, (255, 0, 0), (self.x, self.y), (self.x + self.x_vel, self.y + self.y_vel))
+        #pygame.draw.rect(app.screen, (250, 0, 0), self.get_rect(), 1)
+        #font_ren = app.font.render("%s" % self.angle, False, (200, 200, 200))
+        #app.screen.blit(font_ren, (self.x - 30, self.y - 30))
 
 
 class InGame(AppState):
@@ -91,6 +91,11 @@ class InGame(AppState):
             if self.player.can_eat(e.get_rect()):
                 # ate!
                 self.edibles.remove(e)
+
+        # randomly add edibles sometimes
+        r = random.randint(0, 100)
+        if r == 0:
+            self._spawn_edible()
 
         return super(InGame, self).process()
 
