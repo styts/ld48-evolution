@@ -57,13 +57,13 @@ class InGame(AppState):
 
     def reset(self):
         self.player = Player(self.app.screen_w / 2, self.app.screen_h / 2)
+        self.background = pygame.Surface(self.app.screen.get_size())
 
     def process_input(self, event):
         # quit to menu - ESC
         if event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE:
             self.next_state = ("GoodBye", None)
 
-        self.player.process_input(event)  # keys move me
-
     def draw(self):
+        self.app.screen.blit(self.background, (0, 0))
         self.player.draw(self.app.screen)
