@@ -196,10 +196,11 @@ class InGame(AppState):
     def draw(self):
         self.app.screen.blit(self.background, (0, 0))
 
-        self.safehouse.draw(self.app.screen)
-
         for e in self.edibles:
             e.draw(self.app.screen)
 
-        self.player.draw(self.app)
         self.sea.draw(self.app.screen)
+        self.safehouse.draw(self.app.screen)
+
+        self.player.draw(self.app)
+
