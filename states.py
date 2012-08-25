@@ -31,9 +31,13 @@ class InGame(AppState):
             self._spawn_edible()
 
         self.safehouse.process()
-        sp = self.sea.process()
-        if not sp:
-            self.semi_reset()
+        self.bird.process()
+        sea_x = self.sea.process()
+        if sea_x > self.player.get_rect().x:
+            if self.bird.state == "PASSIVE":
+                self.bird.show()
+            if self.bird.state == "FINISHED":
+                self.semi_reset()
 
         # decrement sea counter
         self.sea_counter -= 1
@@ -63,6 +67,8 @@ class InGame(AppState):
     def semi_reset(self):
         self.safehouse = Safehouse(self.app.screen_w / 2 - Safehouse.a / 2, self.app.screen_h / 2 - Safehouse.a / 2)
         self.sea_counter = FLOOD_TIME * 30
+        self.sea.x = -150
+        self.bird.state = "PASSIVE"
         self.player.reset_color()
 
         self.edibles = []
@@ -77,6 +83,7 @@ class InGame(AppState):
         self.background.fill((200, 200, 200))
 
         self.sea = Sea(self.app)
+        self.bird = Bird()
         self.semi_reset()
 
     def process_input(self, event):
@@ -94,8 +101,9 @@ class InGame(AppState):
         self.safehouse.draw(self.app.screen, self.player)
 
         self.player.draw(self.app)
+        self.bird.draw(self.app.screen)
 
-        if not self.sea.flooding:
+        if self.sea.state == "PASSIVE":
             f_ren = self.app.font.render("Flood in %s sec" % (self.sea_counter / 30), False, (0, 0, 50))
             self.app.screen.blit(f_ren, (150, 5))
 

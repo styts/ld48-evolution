@@ -3,12 +3,57 @@ import pygame
 import math
 import random
 
-FLOOD_TIME = 40
+FLOOD_TIME = 10
+
+
+class Bird(object):
+    states = ["PASSIVE", "SLIDE_OUT", "SEARCH", "SLIDE_IN", "FINISHED"]
+    srch_frames = 35  # ~ 1.2 seconds
+    sprites = []
+
+    def __init__(self):
+        self.sprites.append(pygame.image.load(resource_path('data/sprites/bird1.png')).convert_alpha())
+        self.sprites.append(pygame.image.load(resource_path('data/sprites/bird2.png')).convert_alpha())
+
+        self.state = "PASSIVE"
+        self._i = 0
+        self.x = 0
+
+    def process(self):
+        if random.randint(0, 10) == 0:  # once in a while, flip the sprite
+            self._i = 1 if not self._i else 0
+
+        if self.state == "SLIDE_OUT":
+            if self.x <= 246:
+                self.x += 4
+            else:
+                self.state = "SEARCH"
+        if self.state == "SEARCH":
+            if self.srch_frames:
+                self.srch_frames -= 1
+            else:
+                self.state = "SLIDE_IN"
+        if self.state == "SLIDE_IN":
+            if self.x:
+                self.x -= 4
+            else:
+                self.state = "FINISHED"
+
+    def draw(self, screen):
+        spr = self.sprites[self._i]
+        screen.blit(spr, (self.x - 250, 200))
+
+    def show(self):
+        self.state = "SLIDE_OUT"
+        self.srch_frames = 35
+        self.x = 0
+        self._i = 0
 
 
 class Sea(object):
     sprites = []
     c = (25, 123, 192)
+    states = ["PASSIVE", "FLOODING", "STABLE", "DRYING"]
 
     def __init__(self, app):
         self.sprites.append(pygame.image.load(resource_path('data/sprites/sea1.png')).convert_alpha())
@@ -21,34 +66,44 @@ class Sea(object):
         self.sea_alpha = 255
         self.speed = 0
         self._i = 0
-        self.flooding = False
+        self.state = "PASSIVE"
+        self.stable_frames = 80
 
     def flood(self):
-        self.flooding = True
+        self.state = "FLOODING"
         self.x = -150
         self.speed = 10
         self._i = 0  # sprite index
         self.sea_alpha = 255
+        self.solidsea.fill(Sea.c)
+        self.solidsea.set_alpha(self.sea_alpha)
 
     def process(self):
-        self.x += self.speed
-        if random.randint(0, 10) == 0:  # once in a while, flip the sprite
-            self._i = 1 if not self._i else 0
-        if self.x > self.solidsea.get_width():
+        if self.state == "FLOODING":
+            self.x += self.speed
+            if random.randint(0, 10) == 0:  # once in a while, flip the sprite
+                self._i = 1 if not self._i else 0
+            if self.x > self.solidsea.get_width():
+                self.state = "STABLE"
+                self.stable_frames = 120
+
+        if self.state == "STABLE":
+            self.stable_frames -= 1
+            if not self.stable_frames:
+                self.state = "DRYING"
+
+        if self.state == "DRYING":
             self.sea_alpha -= 5
             self.solidsea.set_alpha(max(0, self.sea_alpha))
-        if self.sea_alpha == 250:
-            self.flooding = False
-            return False
-        else:
-            return True
+            if not self.sea_alpha:
+                self.state = "PASSIVE"
+
+        return self.x
 
     def draw(self, screen):
-        if self.x > self.solidsea.get_width():
-            # blue screen
-            if self.sea_alpha:
-                screen.blit(self.solidsea, (0, 0))
-        else:
+        if self.state == "DRYING" or self.state == "STABLE":
+            screen.blit(self.solidsea, (0, 0))
+        if self.state == "FLOODING":
             # wave
             spr = self.sprites[self._i]
             screen.blit(spr, (self.x, 0))
@@ -57,9 +112,9 @@ class Sea(object):
 
 class Safehouse(object):
     colors = [
-        (120, 0, 0),  # r
-        (0, 120, 0),  # g
-        (0, 0, 120),  # b
+        (120, 0, 0),
+        (0, 120, 0),
+        (0, 0, 120),
         (0, 120, 120),
         (120, 0, 120),
         (120, 120, 0),
@@ -67,7 +122,7 @@ class Safehouse(object):
         (180, 0, 180),
         (180, 180, 0),
     ]
-    a = 100
+    a = 100  # side of it
 
     def __init__(self, x, y):
         self.color = random.choice(Safehouse.colors)
@@ -107,7 +162,6 @@ class Edible(object):
 
     def draw(self, screen):
         screen.blit(self.sprite, (self.x, self.y))
-        #pygame.draw.rect(screen, self.color, self.get_rect(), 1)
 
 
 class Player(object):
@@ -141,8 +195,6 @@ class Player(object):
         # move according to velocities
         self.x += self.x_vel
         self.y += self.y_vel
-
-        #self._head_rect = pygame.Rect(self.x + 45, self.y + 23, 20, 20)
 
         # reduce velocities (~ friction)
         a = 0.68
@@ -207,7 +259,3 @@ class Player(object):
         rot_sprite = pygame.transform.rotate(self.sprite, self.angle)
         rot_sprite.fill(self.color, None, pygame.BLEND_RGBA_MULT)
         app.screen.blit(rot_sprite, (self.x, self.y))
-        #pygame.draw.line(app.screen, (255, 0, 0), (self.x, self.y), (self.x + self.x_vel, self.y + self.y_vel))
-        #pygame.draw.rect(app.screen, (250, 0, 0), self.get_rect(), 1)
-        #font_ren = app.font.render("%s" % self.angle, False, (200, 200, 200))
-        #app.screen.blit(font_ren, (self.x - 30, self.y - 30))
