@@ -57,15 +57,15 @@ class Sea(object):
 
 class Safehouse(object):
     colors = [
-        (120, 40, 40),  # r
-        (40, 120, 40),  # g
-        (40, 40, 120),  # b
-        (40, 120, 120),
-        (120, 40, 120),
-        (120, 120, 40),
-        (40, 180, 180),
-        (180, 40, 180),
-        (180, 180, 40),
+        (120, 0, 0),  # r
+        (0, 120, 0),  # g
+        (0, 0, 120),  # b
+        (0, 120, 120),
+        (120, 0, 120),
+        (120, 120, 0),
+        (0, 180, 180),
+        (180, 0, 180),
+        (180, 180, 0),
     ]
     a = 100
 
@@ -87,7 +87,8 @@ class Safehouse(object):
 
 
 class Edible(object):
-    colors = {'cherry': (40, -20, -20), 'berry': (-20, -20, 40), 'lime': (-20, 40, -20), 'blacky': (-40, -40, -40)}
+    colors = {'cherry': (50, -20, -20), 'berry': (-20, -20, 50), 'lime': (-20, 50, -20), 'blacky': (-50, -50, -50)}
+    #colors = {'cherry': (40, -0, -0), 'berry': (-0, -0, 40), 'lime': (-0, 40, -0), 'blacky': (-40, -40, -40)}
     sprites = {'cherry': pygame.image.load(resource_path('data/sprites/cherry.png')),
                'berry': pygame.image.load(resource_path('data/sprites/berry.png')),
                'lime': pygame.image.load(resource_path('data/sprites/lime.png')),
@@ -120,7 +121,10 @@ class Player(object):
         self.angle = 0
         self.color = (0, 0, 0)
         self.safe = False
-        #self.color = (255, 255, 255)
+        self.reset_color()
+
+    def reset_color(self):
+        self.color = (0, 0, 0)
 
     def process(self, safehouse):
         keys = pygame.key.get_pressed()
@@ -173,9 +177,9 @@ class Player(object):
         s = sum(a)
 
         pogreshnost = 30
-        cam = max(0, min(100, 100 - s + pogreshnost))
-        print a, cam
-
+        s = s - pogreshnost
+        cam = max(0, min(100, 100 - s))
+        #print a, s, cam
         return cam
 
     def is_invisible(self, c):

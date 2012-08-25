@@ -26,7 +26,7 @@ class InGame(AppState):
                 self.edibles.remove(e)
 
         # randomly add edibles sometimes
-        r = random.randint(0, 50)  # oftenness of edibles
+        r = random.randint(0, 40)  # oftenness of edibles, spawn rate
         if r == 0:
             self._spawn_edible()
 
@@ -63,6 +63,7 @@ class InGame(AppState):
     def semi_reset(self):
         self.safehouse = Safehouse(self.app.screen_w / 2 - Safehouse.a / 2, self.app.screen_h / 2 - Safehouse.a / 2)
         self.sea_counter = FLOOD_TIME * 30
+        self.player.reset_color()
 
         self.edibles = []
 
