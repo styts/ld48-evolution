@@ -1,9 +1,7 @@
 import pygame
 import os
 from utils import resource_path
-from logic import InGame
-# class MainMenu(AppState):
-#     pass
+from states import InGame, DeathBySea
 
 
 class App():
@@ -30,6 +28,7 @@ class App():
         self._appstates = []
         #self._appstates.append(MainMenu(self))
         self._appstates.append(InGame(self))
+        self._appstates.append(DeathBySea(self))
 
         self.appstate = self._get_appstate("InGame")
         self.appstate.reset()

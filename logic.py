@@ -1,4 +1,4 @@
-from utils import AppState, resource_path
+from utils import resource_path
 import pygame
 import math
 import random
@@ -6,28 +6,44 @@ import random
 
 class Sea(object):
     sprites = []
+    c = (25, 123, 192)
 
-    def __init__(self):
+    def __init__(self, app):
         self.sprites.append(pygame.image.load(resource_path('data/sprites/sea1.png')).convert_alpha())
         self.sprites.append(pygame.image.load(resource_path('data/sprites/sea2.png')).convert_alpha())
 
         self.cur_sprite = None
         self.x = -150
+        self.solidsea = pygame.Surface(app.screen.get_size())
+        self.solidsea.fill(Sea.c)
+        self.sea_alpha = 255
+        self.speed = 0
+        self._i = 0
 
     def flood(self):
         self.x = -150
-        self.speed = 5
+        self.speed = 10
         self._i = 0  # sprite index
+        self.sea_alpha = 255
 
     def process(self):
         self.x += self.speed
         if random.randint(0, 10) == 0:  # once in a while, flip the sprite
             self._i = 1 if not self._i else 0
+        if self.x > self.solidsea.get_width():
+            self.sea_alpha -= 5
+            self.solidsea.set_alpha(max(0, self.sea_alpha))
 
     def draw(self, screen):
-        spr = self.sprites[self._i]
-        screen.blit(spr, (self.x, 0))
-        screen.fill((25, 123, 192), pygame.Rect(0, 0, self.x, screen.get_height()))
+        if self.x > self.solidsea.get_width():
+            # blue screen
+            if self.sea_alpha:
+                screen.blit(self.solidsea, (0, 0))
+        else:
+            # wave
+            spr = self.sprites[self._i]
+            screen.blit(spr, (self.x, 0))
+            screen.fill(Sea.c, pygame.Rect(0, 0, self.x, screen.get_height()))
 
 
 class Safehouse(object):
@@ -36,12 +52,15 @@ class Safehouse(object):
     def __init__(self, x, y):
         self.color = (40, 80, 40)
         self.r = pygame.Rect(x, y, Safehouse.a, Safehouse.a)
+        self.lock = pygame.image.load(resource_path('data/sprites/lock.png')).convert_alpha()
 
     def process(self):
         pass
 
-    def draw(self, surface):
+    def draw(self, surface, player):
         pygame.draw.rect(surface, self.color, self.r)
+        if player.is_safe():
+            surface.blit(self.lock, (self.r.x + self.r.width - 24, self.r.y + self.r.height - 24))
 
 
 class Edible(object):
@@ -76,9 +95,10 @@ class Player(object):
         self.y_vel = 0
         self.angle = 0
         self.color = (0, 0, 0)
+        self.safe = False
         #self.color = (255, 255, 255)
 
-    def process(self):
+    def process(self, safehouse):
         keys = pygame.key.get_pressed()
         #print keys
         if keys[pygame.K_LEFT]:
@@ -111,6 +131,15 @@ class Player(object):
         else:
             self.y_vel = 0
 
+        # safe?
+        if safehouse.r.contains(self.get_rect()):
+            self.safe = True
+        else:
+            self.safe = False
+
+    def is_safe(self):
+        return self.safe
+
     def _accel(self, x_acc, y_acc):
         self.x_vel += x_acc
         self.y_vel += y_acc
@@ -137,70 +166,3 @@ class Player(object):
         #pygame.draw.rect(app.screen, (250, 0, 0), self.get_rect(), 1)
         #font_ren = app.font.render("%s" % self.angle, False, (200, 200, 200))
         #app.screen.blit(font_ren, (self.x - 30, self.y - 30))
-
-
-class InGame(AppState):
-    #edibles = []
-    #safehouse = None
-
-    def process(self):
-        self.player.process()
-
-        for e in self.edibles:
-            if self.player.can_eat(e.get_rect()):
-                self.player.eat(e)
-                self.edibles.remove(e)
-
-        # randomly add edibles sometimes
-        r = random.randint(0, 100)
-        if r == 0:
-            self._spawn_edible()
-
-        self.safehouse.process()
-        self.sea.process()
-
-        return super(InGame, self).process()
-
-    def _spawn_edible(self):
-
-        while True:  # don't allow fruits inside the safehouse
-            x = random.randint(0, self.app.screen_w)
-            y = random.randint(0, self.app.screen_h)
-            if not self.safehouse.r.colliderect(pygame.Rect(x, y, 24, 24)):
-                break
-
-        name = Edible.colors.keys()[random.randint(0, Edible.colors.keys().__len__() - 1)]
-        e = Edible(x, y, name)
-        self.edibles.append(e)
-
-    def reset(self):
-        self.edibles = []
-        self.player = Player(self.app.screen_w / 2 - 32, self.app.screen_h / 2 - 32)
-        self.background = pygame.Surface(self.app.screen.get_size())
-        self.background.fill((200, 200, 200))
-
-        self.safehouse = Safehouse(self.app.screen_w / 2 - Safehouse.a / 2, self.app.screen_h / 2 - Safehouse.a / 2)
-        self.sea = Sea()
-
-        # spawn some edibles
-        for i in xrange(10):
-            self._spawn_edible()
-
-        self.sea.flood()
-
-    def process_input(self, event):
-        # quit to menu - ESC
-        if event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE:
-            self.next_state = ("GoodBye", None)
-
-    def draw(self):
-        self.app.screen.blit(self.background, (0, 0))
-
-        for e in self.edibles:
-            e.draw(self.app.screen)
-
-        self.sea.draw(self.app.screen)
-        self.safehouse.draw(self.app.screen)
-
-        self.player.draw(self.app)
-
