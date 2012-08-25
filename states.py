@@ -95,5 +95,8 @@ class InGame(AppState):
         self.player.draw(self.app)
 
         if not self.sea.flooding:
-            f_ren = self.app.font.render("Flood: %s" % (self.sea_counter / 30), False, (0, 0, 50))
+            f_ren = self.app.font.render("Flood in %s sec" % (self.sea_counter / 30), False, (0, 0, 50))
             self.app.screen.blit(f_ren, (150, 5))
+
+        f_ren = self.app.font.render("Camouflage %s%%" % (self.player.camouflage(self.safehouse.color)), False, (255, 255, 255))
+        self.app.screen.blit(f_ren, (350, 5))

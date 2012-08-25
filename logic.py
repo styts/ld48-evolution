@@ -3,7 +3,7 @@ import pygame
 import math
 import random
 
-FLOOD_TIME = 30
+FLOOD_TIME = 40
 
 
 class Sea(object):
@@ -73,6 +73,7 @@ class Safehouse(object):
         self.color = random.choice(Safehouse.colors)
         self.r = pygame.Rect(x, y, Safehouse.a, Safehouse.a)
         self.lock = pygame.image.load(resource_path('data/sprites/lock.png')).convert_alpha()
+        self.invis = pygame.image.load(resource_path('data/sprites/invisibility.png')).convert_alpha()
 
     def process(self):
         pass
@@ -81,13 +82,16 @@ class Safehouse(object):
         pygame.draw.rect(surface, self.color, self.r)
         if player.is_safe():
             surface.blit(self.lock, (self.r.x + self.r.width - 24, self.r.y + self.r.height - 24))
+        if player.is_invisible(self.color):
+            surface.blit(self.invis, (self.r.x + self.r.width - 48, self.r.y + self.r.height - 24))
 
 
 class Edible(object):
-    colors = {'cherry': (40, -20, -20), 'berry': (-20, -20, 40), 'lime': (-20, 40, -20)}
+    colors = {'cherry': (40, -20, -20), 'berry': (-20, -20, 40), 'lime': (-20, 40, -20), 'blacky': (-40, -40, -40)}
     sprites = {'cherry': pygame.image.load(resource_path('data/sprites/cherry.png')),
                'berry': pygame.image.load(resource_path('data/sprites/berry.png')),
-               'lime': pygame.image.load(resource_path('data/sprites/lime.png'))}
+               'lime': pygame.image.load(resource_path('data/sprites/lime.png')),
+               'blacky': pygame.image.load(resource_path('data/sprites/blacky.png'))}
 
     def __init__(self, x, y, name):
         self.x = x
@@ -159,6 +163,23 @@ class Player(object):
 
     def is_safe(self):
         return self.safe
+
+    def camouflage(self, bg_col):
+        # how close are the colors
+        d_r = abs(self.color[0] - bg_col[0])
+        d_g = abs(self.color[1] - bg_col[1])
+        d_b = abs(self.color[2] - bg_col[2])
+        a = [d_r, d_g, d_b]
+        s = sum(a)
+
+        pogreshnost = 30
+        cam = max(0, min(100, 100 - s + pogreshnost))
+        print a, cam
+
+        return cam
+
+    def is_invisible(self, c):
+        return self.camouflage(c) == 100  # 100% of camouflage
 
     def _accel(self, x_acc, y_acc):
         self.x_vel += x_acc

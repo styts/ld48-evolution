@@ -50,7 +50,6 @@ class AppState(object):
     def _reset_background(self):
         """ draw the background"""
         self.app.screen.blit(self.app.background, (0, 0))
-        #self.app.screen.fill((0, 0, 0))
         self.app.dirty(self.app.background.get_rect())
 
     def needs_wait(self):
