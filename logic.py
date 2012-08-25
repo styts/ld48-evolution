@@ -46,21 +46,6 @@ class Player(object):
         self.x_vel += x_acc
         self.y_vel += y_acc
 
-    def process_input(self, event):
-        # work the keys for moving
-        # fixme: keydown?
-        pass
-
-
-        # if event.type == pygame.KEYUP and event.key == pygame.K_UP:
-        #     self._accel(0, 1)
-        # if event.type == pygame.KEYUP and event.key == pygame.K_DOWN:
-        #     self._accel(0, -1)
-        # if event.type == pygame.KEYUP and event.key == pygame.K_LEFT:
-        #     self._accel(-1, 0)
-        # if event.type == pygame.KEYUP and event.key == pygame.K_RIGHT:
-        #     self._accel(1, 0)
-
     def draw(self, screen):
         screen.blit(self.sprite, (self.x, self.y))
 
