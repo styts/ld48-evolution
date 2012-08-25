@@ -4,6 +4,20 @@ import math
 import random
 
 
+class Safehouse(object):
+    a = 100
+
+    def __init__(self, x, y):
+        self.color = (40, 80, 40)
+        self.r = pygame.Rect(x, y, Safehouse.a, Safehouse.a)
+
+    def process(self):
+        pass
+
+    def draw(self, surface):
+        pygame.draw.rect(surface, self.color, self.r)
+
+
 class Edible(object):
     colors = {'cherry': (50, -20, -20), 'berry': (-20, -20, 50), 'lime': (-20, 50, -20)}
     sprites = {'cherry': pygame.image.load(resource_path('data/sprites/cherry.png')),
@@ -100,7 +114,8 @@ class Player(object):
 
 
 class InGame(AppState):
-    edibles = []
+    #edibles = []
+    #safehouse = None
 
     def process(self):
         self.player.process()
@@ -115,20 +130,30 @@ class InGame(AppState):
         if r == 0:
             self._spawn_edible()
 
+        # safehouse
+        self.safehouse.process()
+
         return super(InGame, self).process()
 
     def _spawn_edible(self):
-        x = random.randint(0, self.app.screen_w)
-        y = random.randint(0, self.app.screen_h)
-        #color = (random.randint(50, 255), random.randint(50, 255), random.randint(50, 255))
+
+        while True:  # don't allow fruits inside the safehouse
+            x = random.randint(0, self.app.screen_w)
+            y = random.randint(0, self.app.screen_h)
+            if not self.safehouse.r.colliderect(pygame.Rect(x, y, 24, 24)):
+                break
+
         name = Edible.colors.keys()[random.randint(0, Edible.colors.keys().__len__() - 1)]
         e = Edible(x, y, name)
         self.edibles.append(e)
 
     def reset(self):
-        self.player = Player(self.app.screen_w / 2, self.app.screen_h / 2)
+        self.edibles = []
+        self.player = Player(self.app.screen_w / 2 - 32, self.app.screen_h / 2 - 32)
         self.background = pygame.Surface(self.app.screen.get_size())
-        self.background.fill((200,200,200))
+        self.background.fill((200, 200, 200))
+
+        self.safehouse = Safehouse(self.app.screen_w / 2 - Safehouse.a / 2, self.app.screen_h / 2 - Safehouse.a / 2)
 
         # spawn some edibles
         for i in xrange(10):
@@ -141,6 +166,8 @@ class InGame(AppState):
 
     def draw(self):
         self.app.screen.blit(self.background, (0, 0))
+
+        self.safehouse.draw(self.app.screen)
 
         for e in self.edibles:
             e.draw(self.app.screen)
