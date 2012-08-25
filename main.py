@@ -1,72 +1,9 @@
 import pygame
 import os
 from utils import resource_path
-
-
-class AppState(object):
-    """The App class takes care of the state transitions between the finite state automaton which consists of AppStates
-    Those could be: Menu, InGame, LevelComplete, GameOver, HighScores, etc.
-    They should all implement the following methods.
-    """
-    i_wait = 0  # gets decremented every frame if > 0 (used for pausing)
-    next_state = None  # holds None or a string with class name of the place to go
-    hover_button = None
-    CLICK_DELAY = 3  # nr of frames (3 ~ 100ms)
-
-    def process(self):
-        """Handles the mouse and keyboard"""
-
-        if self.needs_wait():
-            return None
-
-        if self.next_state:
-            return self.next_state
-
-    def draw(self):
-        """Draws stuff on app.screen ( don't forget to call app.dirty(rect) )"""
-        raise NotImplementedError("Should be implemented in AppState subclass")
-
-    def resume(self, arg):
-        """Called form App when being switched to"""
-        #raise NotImplementedError("Should be implemented in AppState subclass")
-        self.hover_button = None
-        self.next_state = None
-
-    def _reset_background(self):
-        """ draw the background"""
-        self.app.screen.blit(self.app.background, (0, 0))
-        #self.app.screen.fill((0, 0, 0))
-        self.app.dirty(self.app.background.get_rect())
-
-    def needs_wait(self):
-        #print self.i_wait
-        if self.i_wait > 0:
-            self.i_wait = self.i_wait - 1
-            return True
-        return False
-
-    def process_input(self, event):
-        pass
-
-    def wait(self, cycles):
-        self.i_wait = cycles
-
-    def __init__(self, app):
-        self.app = app
-
-
-class MainMenu(AppState):
-    pass
-
-
-class InGame(AppState):
-    def process_input(self, event):
-        # quit to menu - ESC
-        if event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE:
-            self.next_state = ("GoodBye", None)
-
-    def draw(self):
-        pass
+from logic import InGame
+# class MainMenu(AppState):
+#     pass
 
 
 class App():
@@ -106,7 +43,6 @@ class App():
             if astate.__class__.__name__ == s:
                 return astate
 
-
     def process(self):
         self.clock.tick(30)
 
@@ -134,11 +70,9 @@ class App():
 
         # write fps
         fps_surf = self.font.render("FPS: %2.2f" % self.clock.get_fps(), False, (255, 255, 255), (0, 0, 0))
-        #self.dirty(self.screen.blit(fps_surf, (0, 0)))
         self.screen.blit(fps_surf, (0, 0))
 
-        #pygame.display.update(self._dirty_rects)
-        pygame.display.flip()  # (self.screen, (0, 0))
+        pygame.display.flip()
         pygame.event.pump()
 
 app = App()
