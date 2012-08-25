@@ -10,8 +10,12 @@ class Edible(object):
         self.y = y
         self.color = color
 
+    def get_rect(self):
+        return pygame.Rect(self.x - 5, self.y - 5, 10, 10)
+
     def draw(self, screen):
-        pygame.draw.circle(screen, self.color, (self.x - 5, self.y - 5), 10, 1)
+        pygame.draw.circle(screen, self.color, (self.x, self.y), 10, 1)
+        pygame.draw.rect(screen, self.color, self.get_rect(), 1)
 
 
 class Player(object):
@@ -40,6 +44,8 @@ class Player(object):
         self.x += self.x_vel
         self.y += self.y_vel
 
+        #self._head_rect = pygame.Rect(self.x + 45, self.y + 23, 20, 20)
+
         # reduce velocities (~ friction)
         a = 0.68
         if self.x_vel > a:
@@ -60,10 +66,17 @@ class Player(object):
         self.y_vel += y_acc
         self.angle = math.degrees(math.atan2(self.x_vel, self.y_vel) - math.pi / 2)
 
+    def get_rect(self):
+        return pygame.Rect(self.x, self.y, self.sprite.get_width(), self.sprite.get_height())
+
+    def can_eat(self, rect):
+        return self.get_rect().colliderect(rect)
+
     def draw(self, app):
         rot_sprite = pygame.transform.rotate(self.sprite, self.angle)
         app.screen.blit(rot_sprite, (self.x, self.y))
         pygame.draw.line(app.screen, (255, 0, 0), (self.x, self.y), (self.x + self.x_vel, self.y + self.y_vel))
+        pygame.draw.rect(app.screen, (250, 0, 0), self.get_rect(), 1)
         font_ren = app.font.render("%s" % self.angle, False, (200, 200, 200))
         app.screen.blit(font_ren, (self.x - 30, self.y - 30))
 
@@ -73,6 +86,12 @@ class InGame(AppState):
 
     def process(self):
         self.player.process()
+
+        for e in self.edibles:
+            if self.player.can_eat(e.get_rect()):
+                # ate!
+                self.edibles.remove(e)
+
         return super(InGame, self).process()
 
     def _spawn_edible(self):
@@ -86,7 +105,7 @@ class InGame(AppState):
         self.player = Player(self.app.screen_w / 2, self.app.screen_h / 2)
         self.background = pygame.Surface(self.app.screen.get_size())
 
-        # spawn edibles
+        # spawn some edibles
         for i in xrange(10):
             self._spawn_edible()
 
