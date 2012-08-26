@@ -262,7 +262,7 @@ class Edible(object):
 
 
 class Player(object):
-    orig_color = (100, 100, 100)
+    orig_color = (0, 0, 0)
 
     def __init__(self, x, y):
         self.sprite = pygame.image.load(resource_path("data/sprites/player.png")).convert_alpha()
@@ -271,13 +271,14 @@ class Player(object):
         self.x_vel = 0
         self.y_vel = 0
         self.angle = 0
-        self.color = (0, 0, 0)
         self.safe = False
         self.reset_color()
+        self.sh = fill_with_color(self.sprite, (10, 10, 10), 100)
 
     def reset_color(self):
         self.color = Player.orig_color
-        self.col_sprite = fill_with_color(self.sprite, self.color, 0)
+        #self.col_sprite = fill_with_color(self.sprite, self.color, 0)
+        self._recolor()
 
     def process(self, safehouse):
         keys = pygame.key.get_pressed()
@@ -347,16 +348,21 @@ class Player(object):
     def can_eat(self, rect):
         return self.get_rect().contains(rect)
 
+    def _recolor(self):
+        fill_color = self.color if any(self.color) > 0 else (50, 50, 50)
+        self.col_sprite = fill_with_color(self.sprite, fill_color, 0)
+
     def eat(self, edible):
         def n(colval):
             return max(Player.orig_color[0], min(255, colval))
         r, g, b = edible.color
         sr, sg, sb = self.color
         self.color = (n(sr + r), n(sg + g), n(sb + b))
-        self.col_sprite = fill_with_color(self.sprite, self.color, 0)
+        self._recolor()
 
     def draw(self, app):
         col_rot_sprite = pygame.transform.rotate(self.col_sprite, self.angle)
-        sh = make_shadow(col_rot_sprite, 50)
-        app.screen.blit(sh, (self.x + 4, self.y + 4))
+        rot_sh = pygame.transform.rotate(self.sh, self.angle)
+
+        app.screen.blit(rot_sh, (self.x + 4, self.y + 4))
         app.screen.blit(col_rot_sprite, (self.x, self.y))
