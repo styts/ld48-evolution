@@ -249,7 +249,7 @@ class InGame(AppState):
 
         self.player.draw(self.app)
         self.bird.draw(self.app.screen)
-        self.hud.draw(self.app.screen)
+        self.hud.draw(self.app.screen, self.sea_counter / 30)
 
         if self.sea.state == "PASSIVE":
             f_ren = self.app.font.render("Flood in %s sec" % (self.sea_counter / 30), False, (0, 0, 50))

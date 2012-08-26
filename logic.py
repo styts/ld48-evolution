@@ -15,6 +15,7 @@ class HUD(object):
         self.app = app
 
         self.hud = pygame.image.load(resource_path('data/sprites/hud.png')).convert_alpha()
+        #self.flood = pygame.image.load(resource_path('data/sprites/flood_ico.png')).convert_alpha()
 
         self.heart = pygame.image.load(resource_path('data/sprites/heart_ico.png')).convert_alpha()
         self.heart_dead = pygame.image.load(resource_path('data/sprites/heart_dead_ico.png')).convert_alpha()
@@ -40,7 +41,7 @@ class HUD(object):
         elif self.bird_lives <= 0:
             return 1
 
-    def draw(self, screen):
+    def draw(self, screen, fl_left):
         screen.blit(self.hud, (0, 0))
         x = 728
         a = 30
@@ -59,6 +60,13 @@ class HUD(object):
             else:
                 sprite = self.bird_dead
             screen.blit(sprite, (screen.get_width() - 80 - (i - 1) * a, 5))
+
+        # draw flood bar
+        max_w = 150
+        w = max_w / FLOOD_TIME * (fl_left)
+        c = (42, 74, 164)
+        if w:
+            pygame.draw.rect(screen, c, pygame.Rect(255, 5, w, 25))
 
 
 class Bird(object):
