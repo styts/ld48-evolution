@@ -17,7 +17,7 @@ class App():
 
         pygame.init()
         pygame.display.set_mode((App.screen_w, App.screen_h))  # , FULLSCREEN)
-        pygame.display.set_caption('Evolution Game')
+        pygame.display.set_caption('Camouflage')
         self.screen = pygame.display.get_surface()
         self.is_running = True  # used to trigger exit by ESC
 

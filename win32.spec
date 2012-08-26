@@ -32,7 +32,7 @@ pyz = PYZ(a.pure)
 exe = EXE(pyz,
           a.scripts,
           exclude_binaries=1,
-          name=os.path.join('build\\pyi.win32\\main', 'main.exe'),
+          name=os.path.join('build\\pyi.win32\\main', 'Camouflage.exe'),
           debug=False,
           strip=None,
           upx=True,
@@ -43,4 +43,4 @@ coll = COLLECT(exe,
                a.datas,
                strip=None,
                upx=True,
-               name=os.path.join('dist', 'main'))
+               name=os.path.join('dist', 'win32'))
