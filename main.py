@@ -24,6 +24,7 @@ class App():
         self.clock = pygame.time.Clock()
 
         self.font = pygame.font.Font(resource_path(os.path.join('data', 'fonts', 'visitor2.ttf')), 24)  # or 25?
+        self.font_med = pygame.font.Font(resource_path(os.path.join('data', 'fonts', 'visitor2.ttf')), 36)
         self.font_big = pygame.font.Font(resource_path(os.path.join('data', 'fonts', 'visitor2.ttf')), 64)
 
         self._appstates = []

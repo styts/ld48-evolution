@@ -5,6 +5,48 @@ import random
 
 FLOOD_TIME = 10
 
+PLAYER_LIVES = 3
+BIRD_LIVES = 5
+
+
+class HUD(object):
+    def __init__(self, app):
+        self.app = app
+
+        self.hud = pygame.image.load(resource_path('data/sprites/hud.png')).convert_alpha()
+
+        self.heart = pygame.image.load(resource_path('data/sprites/heart_ico.png')).convert_alpha()
+        self.heart_dead = pygame.image.load(resource_path('data/sprites/heart_dead_ico.png')).convert_alpha()
+
+        self.bird = pygame.image.load(resource_path('data/sprites/bird_ico.png')).convert_alpha()
+        self.bird_dead = pygame.image.load(resource_path('data/sprites/bird_dead_ico.png')).convert_alpha()
+
+        self.init()
+
+    def init(self):
+        self.player_lives = 1 #PLAYER_LIVES
+        self.bird_lives = BIRD_LIVES
+
+    def draw(self, screen):
+        screen.blit(self.hud, (0, 0))
+        x = 728
+        a = 30
+        # draw player lives
+        for i in xrange(PLAYER_LIVES):
+            if i < self.player_lives:
+                sprite = self.heart
+            else:
+                sprite = self.heart_dead
+            screen.blit(sprite, (x + (i - 1) * a, 5))
+
+        # draw enemy lives
+        for i in xrange(BIRD_LIVES):
+            if i < self.bird_lives:
+                sprite = self.bird
+            else:
+                sprite = self.bird_dead
+            screen.blit(sprite, (screen.get_width() - 80 - (i - 1) * a, 5))
+
 
 class Bird(object):
     states = ["PASSIVE", "SLIDE_OUT", "SEARCH", "SLIDE_IN", "FINISHED"]

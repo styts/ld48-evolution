@@ -66,13 +66,17 @@ class DeathBySea(AppState):
         self.app.screen.blit(self.surface, (0, 0))
 
     def process_input(self, event):
-        if event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE:
-            self.next_state = ("MainMenu", None)
+        if event.type == pygame.KEYUP:
+            self.next_state = ("InGame", "resume")
 
 
 class InGame(AppState):
     def __init__(self, app):
         super(InGame, self).__init__(app)
+        self.reset()
+
+    def resume(self, arg):
+        super(InGame, self).resume(arg)
         self.reset()
 
     def process(self):
@@ -115,7 +119,7 @@ class InGame(AppState):
         while True:  # don't allow fruits inside the safehouse
             x = random.randint(0, self.app.screen_w)
             y = random.randint(0, self.app.screen_h)
-            if not self.safehouse.r.colliderect(pygame.Rect(x, y, 24, 24)):
+            if not self.safehouse.r.colliderect(pygame.Rect(x, y, 24, 24)) and y > 42:  # make hud visible
                 break
 
         name = Edible.colors.keys()[random.randint(0, Edible.colors.keys().__len__() - 1)]
@@ -142,6 +146,7 @@ class InGame(AppState):
 
         self.sea = Sea(self.app)
         self.bird = Bird()
+        self.hud = HUD(self.app)
         self.semi_reset()
 
     def process_input(self, event):
@@ -160,10 +165,11 @@ class InGame(AppState):
 
         self.player.draw(self.app)
         self.bird.draw(self.app.screen)
+        self.hud.draw(self.app.screen)
 
         if self.sea.state == "PASSIVE":
             f_ren = self.app.font.render("Flood in %s sec" % (self.sea_counter / 30), False, (0, 0, 50))
             self.app.screen.blit(f_ren, (150, 5))
 
-        f_ren = self.app.font.render("Camouflage %s%%" % (self.player.camouflage(self.safehouse.color)), False, (255, 255, 255))
-        self.app.screen.blit(f_ren, (350, 5))
+        f_ren = self.app.font_med.render("%s%%" % (self.player.camouflage(self.safehouse.color)), False, (255, 255, 255))
+        self.app.screen.blit(f_ren, (530, 5))
