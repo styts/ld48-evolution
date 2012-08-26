@@ -1,4 +1,4 @@
-from utils import resource_path, fill_with_color
+from utils import resource_path, fill_with_color, make_shadow
 import pygame
 import math
 import random
@@ -15,7 +15,6 @@ class HUD(object):
         self.app = app
 
         self.hud = pygame.image.load(resource_path('data/sprites/hud.png')).convert_alpha()
-        #self.flood = pygame.image.load(resource_path('data/sprites/flood_ico.png')).convert_alpha()
 
         self.heart = pygame.image.load(resource_path('data/sprites/heart_ico.png')).convert_alpha()
         self.heart_dead = pygame.image.load(resource_path('data/sprites/heart_dead_ico.png')).convert_alpha()
@@ -236,12 +235,23 @@ class Edible(object):
         self.name = name
         self.sprite = Edible.sprites[name]
 
+        for k, v in Edible.sprites.items():
+            n = "%s_shadow" % k
+            if n not in Edible.sprites.keys():
+                s = make_shadow(v, 100)
+                Edible.sprites[n] = s
+
+        self.shadow = Edible.sprites["%s_shadow" % self.name]
+
     def get_rect(self):
         # just a center point actually
         return pygame.Rect(self.x + 12, self.y + 12, 1, 1)  # 24: sprite width
 
     def draw(self, screen):
+        s_o = 2  # shadow offset
+        screen.blit(self.shadow, (self.x + s_o, self.y + s_o))
         screen.blit(self.sprite, (self.x, self.y))
+
 
 
 class Player(object):
