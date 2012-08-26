@@ -266,14 +266,17 @@ class Player(object):
 
     def __init__(self, x, y):
         self.sprite = pygame.image.load(resource_path("data/sprites/player.png")).convert_alpha()
+        self.sprite2 = pygame.image.load(resource_path("data/sprites/player2.png")).convert_alpha()
         self.x = x
         self.y = y
         self.x_vel = 0
         self.y_vel = 0
         self.angle = 0
+        self._i = False
         self.safe = False
         self.reset_color()
-        self.sh = fill_with_color(self.sprite, (10, 10, 10), 100)
+        self.sh1 = fill_with_color(self.sprite, (10, 10, 10), 200)
+        self.sh2 = fill_with_color(self.sprite2, (10, 10, 10), 200)
 
     def reset_color(self):
         self.color = Player.orig_color
@@ -341,6 +344,7 @@ class Player(object):
         self.x_vel += x_acc
         self.y_vel += y_acc
         self.angle = math.degrees(math.atan2(self.x_vel, self.y_vel) - math.pi / 2)
+        self._i = not self._i
 
     def get_rect(self):
         return pygame.Rect(self.x, self.y, self.sprite.get_width(), self.sprite.get_height())
@@ -350,7 +354,8 @@ class Player(object):
 
     def _recolor(self):
         fill_color = self.color if any(self.color) > 0 else (50, 50, 50)
-        self.col_sprite = fill_with_color(self.sprite, fill_color, 0)
+        self.col_sprite1 = fill_with_color(self.sprite, fill_color, 0)
+        self.col_sprite2 = fill_with_color(self.sprite2, fill_color, 0)
 
     def eat(self, edible):
         def n(colval):
@@ -361,8 +366,10 @@ class Player(object):
         self._recolor()
 
     def draw(self, app):
-        col_rot_sprite = pygame.transform.rotate(self.col_sprite, self.angle)
-        rot_sh = pygame.transform.rotate(self.sh, self.angle)
+        col_sprite = self.col_sprite1 if self._i else self.col_sprite2
+        sh = self.sh1 if self._i else self.sh2
+        col_rot_sprite = pygame.transform.rotate(col_sprite, self.angle)
+        rot_sh = pygame.transform.rotate(sh, self.angle)
 
         app.screen.blit(rot_sh, (self.x + 4, self.y + 4))
         app.screen.blit(col_rot_sprite, (self.x, self.y))
