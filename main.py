@@ -31,6 +31,7 @@ class App():
         self._appstates.append(MenuMain(self))
         self._appstates.append(MenuHelp(self))
         self._appstates.append(MenuPaused(self))
+        self._appstates.append(MenuDifficulty(self))
         self._appstates.append(InGame(self))
         self._appstates.append(DeathBySea(self))
         self._appstates.append(Victory(self))

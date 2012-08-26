@@ -276,11 +276,12 @@ class Edible(object):
 class Player(object):
     orig_color = (0, 0, 0)
 
-    def __init__(self, x, y):
+    def __init__(self, x, y, diffuculty):
         self.sprite = pygame.image.load(resource_path("data/sprites/player.png")).convert_alpha()
         self.sprite2 = pygame.image.load(resource_path("data/sprites/player2.png")).convert_alpha()
         self.x = x
         self.y = y
+        self.diffuculty = diffuculty
         self.x_vel = 0
         self.y_vel = 0
         self.angle = 0
@@ -343,7 +344,7 @@ class Player(object):
         a = [d_r, d_g, d_b]
         s = sum(a)
 
-        pogreshnost = 30
+        pogreshnost = 10 * self.diffuculty
         s = s - pogreshnost
         cam = max(0, min(100, 100 - s))
         #print a, s, cam

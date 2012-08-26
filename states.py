@@ -47,18 +47,18 @@ class MenuMain(AppState):
         self.app = app
         self.surface = pygame.image.load(resource_path('data/sprites/mainmenu.png')).convert()
         self.items = ["NEW GAME", "HELP", "EXIT"]
-        self.next_states = [("InGame", None), ("MenuHelp", None), ("GoodBye", None)]
+        self.next_states = [("MenuDifficulty", None), ("MenuHelp", None), ("GoodBye", None)]
         self.cur_item = 0
         self.c = (248, 188, 27)
         self.c_sel = (124, 111, 27)
         self.c_sh = (149, 140, 117)
+        self.a = 100
 
     def draw(self):
         self.app.screen.blit(self.surface, (0, 0))
 
         x = self.app.screen_w / 2
         y = self.app.screen_h / 2
-        a = 100
         for i in xrange(self.items.__len__()):
             c = self.c if i != self.cur_item else self.c_sel
             item = self.items[i]
@@ -66,7 +66,7 @@ class MenuMain(AppState):
             sh_ren = self.app.font_big.render(item, False, self.c_sh)
             self.app.screen.blit(sh_ren, (x + 3 - ren.get_width() / 2, y + 3))
             self.app.screen.blit(ren, (x - ren.get_width() / 2, y))
-            y += a
+            y += self.a
 
     def _move_down(self):
         self.cur_item = self.cur_item + 1 if self.cur_item < self.items.__len__() - 1 else 0
@@ -84,6 +84,14 @@ class MenuMain(AppState):
             self._move_down()
         if event.type == pygame.KEYUP and event.key == pygame.K_RETURN:
             self._select()
+
+
+class MenuDifficulty(MenuMain):
+    def __init__(self, app):
+        super(MenuDifficulty, self).__init__(app)
+        self.a = 60
+        self.items = ["EGG", "LARVA", "NYMPH", "Scarabaeus", "back to menu"]
+        self.next_states = [("InGame", 1), ("InGame", 3), ("InGame", 5), ("InGame", 7), ("MenuMain", None)]
 
 
 class MenuPaused(MenuMain):
@@ -118,15 +126,21 @@ class InGame(AppState):
         for i in xrange(1, 5):
             self.grounds.append(pygame.image.load(resource_path('data/sprites/ground/%s.png' % i)).convert())
 
+        self.difficulty = DIFFICULTY
         self.reset()
 
     def resume(self, arg):
         super(InGame, self).resume(arg)
         #print arg
-        if arg and arg == "new":
-            self.new_level()
-        elif arg and arg == "unpause":
-            pass  # do nothing
+        if arg:
+            if type(arg) is int:
+                print arg
+                self.difficulty = arg
+                self.reset()
+            elif arg == "new":
+                self.new_level()
+            elif arg == "unpause":
+                pass  # do nothing
         else:
             self.reset()
         #print self.sea_counter, self.sea.state
@@ -231,7 +245,6 @@ class InGame(AppState):
         self._reset_edibles()
 
     def reset(self):
-        difficulty = DIFFICULTY
         self.background = pygame.Surface(self.app.screen.get_size())
         self._reset_bg()
 
@@ -240,12 +253,13 @@ class InGame(AppState):
         self.hud = HUD(self.app)
 
         self._playa_reset()
-        self.safehouse = Safehouse(self.app.screen_w / 2 - Safehouse.a / 2, self.app.screen_h / 2 - Safehouse.a / 2, difficulty)
+        print "diff", self.difficulty
+        self.safehouse = Safehouse(self.app.screen_w / 2 - Safehouse.a / 2, self.app.screen_h / 2 - Safehouse.a / 2, self.difficulty)
 
         self.new_level()
 
     def _playa_reset(self):
-        self.player = Player(self.app.screen_w / 2 - 32, self.app.screen_h / 2 - 32)
+        self.player = Player(self.app.screen_w / 2 - 32, self.app.screen_h / 2 - 32, self.difficulty)
         self.player.reset_color()
 
     def process_input(self, event):
