@@ -134,7 +134,6 @@ class InGame(AppState):
         #print arg
         if arg:
             if type(arg) is int:
-                print arg
                 self.difficulty = arg
                 self.reset()
             elif arg == "new":
@@ -253,7 +252,6 @@ class InGame(AppState):
         self.hud = HUD(self.app)
 
         self._playa_reset()
-        print "diff", self.difficulty
         self.safehouse = Safehouse(self.app.screen_w / 2 - Safehouse.a / 2, self.app.screen_h / 2 - Safehouse.a / 2, self.difficulty)
 
         self.new_level()
@@ -280,9 +278,9 @@ class InGame(AppState):
         self.bird.draw(self.app.screen)
         self.hud.draw(self.app.screen, self.sea_counter / 30)
 
-        if self.sea.state == "PASSIVE":
-            f_ren = self.app.font.render("Flood in %s sec" % (self.sea_counter / 30), False, (0, 0, 50))
-            self.app.screen.blit(f_ren, (150, 5))
+        # if self.sea.state == "PASSIVE":
+        #     f_ren = self.app.font.render("Flood in %s sec" % (self.sea_counter / 30), False, (0, 0, 50))
+        #     self.app.screen.blit(f_ren, (150, 5))
 
         f_ren = self.app.font_med.render("%s%%" % (self.player.camouflage(self.safehouse.color)), False, (255, 255, 255))
         self.app.screen.blit(f_ren, (530, 5))
