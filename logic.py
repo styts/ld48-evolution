@@ -3,9 +3,10 @@ import pygame
 import math
 import random
 
-FLOOD_TIME = 10
+SPAWN_RATE = 40  # lower means more food
+FLOOD_TIME = 6  # seconds till flood
 
-PLAYER_LIVES = 3
+PLAYER_LIVES = 3  # maximums
 BIRD_LIVES = 5
 
 
@@ -24,8 +25,20 @@ class HUD(object):
         self.init()
 
     def init(self):
-        self.player_lives = 1 #PLAYER_LIVES
-        self.bird_lives = BIRD_LIVES
+        self.player_lives = 2 #PLAYER_LIVES
+        self.bird_lives = 2 #BIRD_LIVES
+
+    def die(self, who):
+        if who == "player":
+            self.player_lives -= 1
+        elif who == "bird":
+            self.bird_lives -= 1
+        if self.player_lives > 0 and self.bird_lives > 0:
+            return 0
+        elif self.player_lives <= 0:
+            return -1
+        elif self.bird_lives <= 0:
+            return 1
 
     def draw(self, screen):
         screen.blit(self.hud, (0, 0))
@@ -49,7 +62,7 @@ class HUD(object):
 
 
 class Bird(object):
-    states = ["PASSIVE", "SLIDE_OUT", "SEARCH", "SLIDE_IN", "FINISHED"]
+    states = ["PASSIVE", "SLIDE_OUT", "SEARCH", "SLIDE_IN"]
     srch_frames = 35  # ~ 1.2 seconds
     sprites = []
 
@@ -57,9 +70,8 @@ class Bird(object):
         self.sprites.append(pygame.image.load(resource_path('data/sprites/bird1.png')).convert_alpha())
         self.sprites.append(pygame.image.load(resource_path('data/sprites/bird2.png')).convert_alpha())
 
-        self.state = "PASSIVE"
         self._i = 0
-        self.x = 0
+        self.reset()
 
     def process(self):
         if random.randint(0, 10) == 0:  # once in a while, flip the sprite
@@ -79,17 +91,25 @@ class Bird(object):
             if self.x:
                 self.x -= 4
             else:
-                self.state = "FINISHED"
+                self.state = "PASSIVE"
 
     def draw(self, screen):
         spr = self.sprites[self._i]
         screen.blit(spr, (self.x - 250, 200))
+
+    def reset(self):
+        self.state = "PASSIVE"
+        self.x = 0
+
+    def eval(self):
+        self.evaluated = True
 
     def show(self):
         self.state = "SLIDE_OUT"
         self.srch_frames = 35
         self.x = 0
         self._i = 0
+        self.evaluated = False
 
 
 class Sea(object):
@@ -109,13 +129,20 @@ class Sea(object):
         self.speed = 0
         self._i = 0
         self.state = "PASSIVE"
-        self.stable_frames = 80
+        #self.stable_frames = 80
+
+    def reset(self):
+        self.state = "PASSIVE"
+        self.sea_alpha = 255
+        self.speed = 0
+        self.x = -150
+        self._i = 0  # sprite index
+        self.stable_frames = 60
 
     def flood(self):
+        self.reset()
         self.state = "FLOODING"
-        self.x = -150
         self.speed = 10
-        self._i = 0  # sprite index
         self.sea_alpha = 255
         self.solidsea.fill(Sea.c)
         self.solidsea.set_alpha(self.sea_alpha)
@@ -127,7 +154,7 @@ class Sea(object):
                 self._i = 1 if not self._i else 0
             if self.x > self.solidsea.get_width():
                 self.state = "STABLE"
-                self.stable_frames = 120
+                #self.stable_frames = 120
 
         if self.state == "STABLE":
             self.stable_frames -= 1
@@ -135,11 +162,11 @@ class Sea(object):
                 self.state = "DRYING"
 
         if self.state == "DRYING":
-            self.sea_alpha -= 5
+            self.sea_alpha -= 4
             self.solidsea.set_alpha(max(0, self.sea_alpha))
-            if not self.sea_alpha:
+            if self.sea_alpha < 0:
                 self.state = "PASSIVE"
-
+        #print self.state, self.sea_alpha
         return self.x
 
     def draw(self, screen):

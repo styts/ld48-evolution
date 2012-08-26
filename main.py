@@ -23,15 +23,18 @@ class App():
 
         self.clock = pygame.time.Clock()
 
-        self.font = pygame.font.Font(resource_path(os.path.join('data', 'fonts', 'visitor2.ttf')), 24)  # or 25?
+        self.font = pygame.font.Font(resource_path(os.path.join('data', 'fonts', 'visitor2.ttf')), 20)  # or 25?
         self.font_med = pygame.font.Font(resource_path(os.path.join('data', 'fonts', 'visitor2.ttf')), 36)
         self.font_big = pygame.font.Font(resource_path(os.path.join('data', 'fonts', 'visitor2.ttf')), 64)
 
         self._appstates = []
         self._appstates.append(MenuMain(self))
         self._appstates.append(MenuHelp(self))
+        self._appstates.append(MenuPaused(self))
         self._appstates.append(InGame(self))
         self._appstates.append(DeathBySea(self))
+        self._appstates.append(Victory(self))
+        self._appstates.append(Defeat(self))
 
         #self.appstate = self._get_appstate("InGame")
         #self.appstate.reset()

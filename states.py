@@ -2,6 +2,32 @@ from utils import *
 from logic import *
 
 
+class Victory(AppState):
+    def __init__(self, app):
+        self.app = app
+        self.surface = pygame.image.load(resource_path('data/sprites/victory.png')).convert()
+
+    def draw(self):
+        self.app.screen.blit(self.surface, (0, 0))
+
+    def process_input(self, event):
+        if event.type == pygame.KEYUP and event.key in [pygame.K_RETURN, pygame.K_SPACE, pygame.K_ESCAPE]:
+            self.next_state = ("MenuMain", None)
+
+
+class Defeat(AppState):
+    def __init__(self, app):
+        self.app = app
+        self.surface = pygame.image.load(resource_path('data/sprites/defeat.png')).convert()
+
+    def draw(self):
+        self.app.screen.blit(self.surface, (0, 0))
+
+    def process_input(self, event):
+        if event.type == pygame.KEYUP and event.key in [pygame.K_RETURN, pygame.K_SPACE, pygame.K_ESCAPE]:
+            self.next_state = ("MenuMain", None)
+
+
 class MenuHelp(AppState):
     def __init__(self, app):
         self.app = app
@@ -11,7 +37,7 @@ class MenuHelp(AppState):
         self.app.screen.blit(self.surface, (0, 0))
 
     def process_input(self, event):
-        if event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE:
+        if event.type == pygame.KEYUP and event.key in [pygame.K_RETURN, pygame.K_SPACE, pygame.K_ESCAPE]:
             self.next_state = ("MenuMain", None)
 
 
@@ -21,7 +47,7 @@ class MenuMain(AppState):
         self.app = app
         self.surface = pygame.image.load(resource_path('data/sprites/mainmenu.png')).convert()
         self.items = ["NEW GAME", "HELP", "EXIT"]
-        self.next_states = ["InGame", "MenuHelp", "GoodBye"]
+        self.next_states = [("InGame", None), ("MenuHelp", None), ("GoodBye", None)]
         self.cur_item = 0
         self.c = (248, 188, 27)
         self.c_sel = (124, 111, 27)
@@ -46,7 +72,7 @@ class MenuMain(AppState):
         self.cur_item = self.cur_item - 1 if self.cur_item >= 1 else self.items.__len__() - 1
 
     def _select(self):
-        self.next_state = (self.next_states[self.cur_item], None)
+        self.next_state = self.next_states[self.cur_item]
 
     def process_input(self, event):
         if event.type == pygame.KEYUP and event.key == pygame.K_UP:
@@ -57,6 +83,13 @@ class MenuMain(AppState):
             self._select()
 
 
+class MenuPaused(MenuMain):
+    def __init__(self, app):
+        super(MenuPaused, self).__init__(app)
+        self.items = ["RESUME", "QUIT GAME"]
+        self.next_states = [("InGame", "unpause"), ("MenuMain", None)]
+
+
 class DeathBySea(AppState):
     def __init__(self, app):
         self.app = app
@@ -65,9 +98,13 @@ class DeathBySea(AppState):
     def draw(self):
         self.app.screen.blit(self.surface, (0, 0))
 
+    def resume(self, arg):
+        super(DeathBySea, self).resume(arg)
+        self.ns = "InGame" if arg >= 0 else "Defeat"
+
     def process_input(self, event):
-        if event.type == pygame.KEYUP:
-            self.next_state = ("InGame", "resume")
+        if event.type == pygame.KEYUP and event.key in [pygame.K_RETURN, pygame.K_SPACE, pygame.K_ESCAPE]:
+            self.next_state = (self.ns, "new")
 
 
 class InGame(AppState):
@@ -77,42 +114,72 @@ class InGame(AppState):
 
     def resume(self, arg):
         super(InGame, self).resume(arg)
-        self.reset()
+        #print arg
+        if arg and arg == "new":
+            self.new_level()
+        elif arg and arg == "unpause":
+            pass  # do nothing
+        else:
+            self.reset()
+        #print self.sea_counter, self.sea.state
 
     def process(self):
+
         self.player.process(self.safehouse)
 
+        # eat any edibles
         for e in self.edibles:
             if self.player.can_eat(e.get_rect()):
                 self.player.eat(e)
                 self.edibles.remove(e)
 
         # randomly add edibles sometimes
-        r = random.randint(0, 40)  # oftenness of edibles, spawn rate
+        r = random.randint(0, SPAWN_RATE)  # oftenness of edibles, spawn rate
         if r == 0:
             self._spawn_edible()
 
         self.safehouse.process()
         self.bird.process()
         sea_x = self.sea.process()
-        if sea_x > self.player.get_rect().x:
+        if sea_x > self.player.get_rect().x and self.sea.state == "FLOODING":
             if self.bird.state == "PASSIVE":
                 self.bird.show()
-            if self.bird.state == "FINISHED":
-                self.semi_reset()
+        if self.bird.state == "SLIDE_IN" and not self.bird.evaluated:
+            self.player.reset_color()
+            self._sh_reset()
+            self._reset_edibles()
+            self._evaluate()
+        #print self.bird.state, "secount", self.sea_counter, self.sea.state, self.sea.sea_alpha
+
+        if self.bird.state == "PASSIVE" and not self.sea_counter:
+            self.sea.reset()
 
         # decrement sea counter
-        self.sea_counter -= 1
-        if self.sea_counter <= 0:
-            self.sea.flood()
-            self.sea_counter = FLOOD_TIME * 30
+        if self.sea.state == "PASSIVE":
+            self.sea_counter -= 1
+            if self.sea_counter <= 0:
+                self.sea.flood()
+                self.sea_counter = FLOOD_TIME * 30
 
         # test death by sea
         pr = self.player.get_rect()
         if self.sea.sea_alpha == 255 and pr.x < self.sea.x and not self.player.is_safe():
-            self.next_state = ("DeathBySea", None)
+            l = self.hud.die("player")
+            self.next_state = ("DeathBySea", l)
 
         return super(InGame, self).process()
+
+    def _evaluate(self):
+        self.bird.eval()
+        percent = self.player.camouflage(self.safehouse.color)
+        e = random.randint(0, 100)
+        live = e <= percent
+        char = "bird" if live else "player"
+        res = self.hud.die(char)
+        if res < 0:
+            self.next_state = ("Defeat", None)
+        elif res > 0:
+            self.next_state = ("Victory", None)
 
     def _spawn_edible(self):
 
@@ -126,33 +193,50 @@ class InGame(AppState):
         e = Edible(x, y, name)
         self.edibles.append(e)
 
-    def semi_reset(self):
-        self.safehouse = Safehouse(self.app.screen_w / 2 - Safehouse.a / 2, self.app.screen_h / 2 - Safehouse.a / 2)
-        self.sea_counter = FLOOD_TIME * 30
-        self.sea.x = -150
-        self.bird.state = "PASSIVE"
-        self.player.reset_color()
-
+    def _reset_edibles(self):
         self.edibles = []
-
-        # spawn some edibles
         for i in xrange(10):
             self._spawn_edible()
 
+    def new_level(self):
+        self.sea_counter = FLOOD_TIME * 30
+        #self.sea.x = -150
+        #self.sea.state = "PASSIVE"
+        #self.sea.reset()
+        #self.bird.state = "PASSIVE"
+        #self.player.reset_color()
+        
+        self.sea.reset()
+        self.bird.reset()
+        self._playa_reset()
+        self._sh_reset()
+
+        self._reset_edibles()
+
     def reset(self):
-        self.player = Player(self.app.screen_w / 2 - 32, self.app.screen_h / 2 - 32)
         self.background = pygame.Surface(self.app.screen.get_size())
         self.background.fill((200, 200, 200))
 
         self.sea = Sea(self.app)
         self.bird = Bird()
         self.hud = HUD(self.app)
-        self.semi_reset()
+
+        self._playa_reset()
+        self._sh_reset()
+
+        self.new_level()
+
+    def _playa_reset(self):
+        self.player = Player(self.app.screen_w / 2 - 32, self.app.screen_h / 2 - 32)
+        self.player.reset_color()
+
+    def _sh_reset(self):
+        self.safehouse = Safehouse(self.app.screen_w / 2 - Safehouse.a / 2, self.app.screen_h / 2 - Safehouse.a / 2)
 
     def process_input(self, event):
         # quit to menu - ESC
         if event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE:
-            self.next_state = ("GoodBye", None)
+            self.next_state = ("MenuPaused", None)
 
     def draw(self):
         self.app.screen.blit(self.background, (0, 0))
