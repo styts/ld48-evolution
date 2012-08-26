@@ -72,10 +72,15 @@ class Bird(object):
     states = ["PASSIVE", "SLIDE_OUT", "SEARCH", "SLIDE_IN"]
     srch_frames = 35  # ~ 1.2 seconds
     sprites = []
+    shadows = []
 
     def __init__(self):
-        self.sprites.append(pygame.image.load(resource_path('data/sprites/bird1.png')).convert_alpha())
-        self.sprites.append(pygame.image.load(resource_path('data/sprites/bird2.png')).convert_alpha())
+        s1 = pygame.image.load(resource_path('data/sprites/bird1.png')).convert_alpha()
+        s2 = pygame.image.load(resource_path('data/sprites/bird2.png')).convert_alpha()
+        self.sprites.append(s1)
+        self.sprites.append(s2)
+        # self.shadows.append(make_shadow(s1, 100))
+        # self.shadows.append(make_shadow(s2, 100))
 
         self._i = 0
         self.reset()
@@ -101,12 +106,14 @@ class Bird(object):
                 self.state = "PASSIVE"
 
     def draw(self, screen):
+        # sh = self.shadows[self._i]
+        # screen.blit(sh, (self.x - 300 + 23, 200 + 23))
         spr = self.sprites[self._i]
-        screen.blit(spr, (self.x - 250, 200))
+        screen.blit(spr, (self.x - 300, 200))
 
     def reset(self):
         self.state = "PASSIVE"
-        self.x = 0
+        self.x = -50
 
     def eval(self):
         self.evaluated = True
@@ -255,6 +262,7 @@ class Edible(object):
 
 
 class Player(object):
+    orig_color = (100, 100, 100)
 
     def __init__(self, x, y):
         self.sprite = pygame.image.load(resource_path("data/sprites/player.png")).convert_alpha()
@@ -268,7 +276,7 @@ class Player(object):
         self.reset_color()
 
     def reset_color(self):
-        self.color = (50, 50, 50)
+        self.color = Player.orig_color
         self.col_sprite = fill_with_color(self.sprite, self.color, 0)
 
     def process(self, safehouse):
@@ -341,7 +349,7 @@ class Player(object):
 
     def eat(self, edible):
         def n(colval):
-            return max(50, min(255, colval))
+            return max(Player.orig_color[0], min(255, colval))
         r, g, b = edible.color
         sr, sg, sb = self.color
         self.color = (n(sr + r), n(sg + g), n(sb + b))
@@ -349,5 +357,6 @@ class Player(object):
 
     def draw(self, app):
         col_rot_sprite = pygame.transform.rotate(self.col_sprite, self.angle)
-        #col_rot_sprite = fill_with_color(rot_sprite, self.color, 0)
+        sh = make_shadow(col_rot_sprite, 50)
+        app.screen.blit(sh, (self.x + 4, self.y + 4))
         app.screen.blit(col_rot_sprite, (self.x, self.y))
