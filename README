@@ -1,4 +1,11 @@
 My LD48 (24) entry. Theme: Evolution
 ====================================
 
+Reguirements
+============
+pygame
+
+Run
+===
+python main.py
 
