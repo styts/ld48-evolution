@@ -1,7 +1,7 @@
 import pygame
 import os
 from utils import resource_path
-from states import InGame, DeathBySea
+from states import *
 
 
 class App():
@@ -23,15 +23,19 @@ class App():
 
         self.clock = pygame.time.Clock()
 
-        self.font = pygame.font.Font(resource_path(os.path.join('data', 'fonts', 'visitor2.ttf')), 25)
+        self.font = pygame.font.Font(resource_path(os.path.join('data', 'fonts', 'visitor2.ttf')), 24)  # or 25?
+        self.font_big = pygame.font.Font(resource_path(os.path.join('data', 'fonts', 'visitor2.ttf')), 64)
 
         self._appstates = []
-        #self._appstates.append(MainMenu(self))
+        self._appstates.append(MenuMain(self))
+        self._appstates.append(MenuHelp(self))
         self._appstates.append(InGame(self))
         self._appstates.append(DeathBySea(self))
 
-        self.appstate = self._get_appstate("InGame")
-        self.appstate.reset()
+        #self.appstate = self._get_appstate("InGame")
+        #self.appstate.reset()
+
+        self.appstate = self._get_appstate("MenuMain")
 
         ## Main Loop
         while self.is_running:

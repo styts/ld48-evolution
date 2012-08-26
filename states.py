@@ -2,6 +2,61 @@ from utils import *
 from logic import *
 
 
+class MenuHelp(AppState):
+    def __init__(self, app):
+        self.app = app
+        self.surface = pygame.image.load(resource_path('data/sprites/menuhelp.png')).convert()
+
+    def draw(self):
+        self.app.screen.blit(self.surface, (0, 0))
+
+    def process_input(self, event):
+        if event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE:
+            self.next_state = ("MenuMain", None)
+
+
+class MenuMain(AppState):
+    """Text-style menu, could be reused (TODO)"""
+    def __init__(self, app):
+        self.app = app
+        self.surface = pygame.image.load(resource_path('data/sprites/mainmenu.png')).convert()
+        self.items = ["NEW GAME", "HELP", "EXIT"]
+        self.next_states = ["InGame", "MenuHelp", "GoodBye"]
+        self.cur_item = 0
+        self.c = (248, 188, 27)
+        self.c_sel = (124, 111, 27)
+
+    def draw(self):
+        self.app.screen.blit(self.surface, (0, 0))
+
+        x = self.app.screen_w / 2
+        y = self.app.screen_h / 2
+        a = 100
+        for i in xrange(self.items.__len__()):
+            c = self.c if i != self.cur_item else self.c_sel
+            item = self.items[i]
+            ren = self.app.font_big.render(item, False, c)
+            self.app.screen.blit(ren, (x - ren.get_width() / 2, y))
+            y += a
+
+    def _move_down(self):
+        self.cur_item = self.cur_item + 1 if self.cur_item < self.items.__len__() - 1 else 0
+
+    def _move_up(self):
+        self.cur_item = self.cur_item - 1 if self.cur_item >= 1 else self.items.__len__() - 1
+
+    def _select(self):
+        self.next_state = (self.next_states[self.cur_item], None)
+
+    def process_input(self, event):
+        if event.type == pygame.KEYUP and event.key == pygame.K_UP:
+            self._move_up()
+        if event.type == pygame.KEYUP and event.key == pygame.K_DOWN:
+            self._move_down()
+        if event.type == pygame.KEYUP and event.key == pygame.K_RETURN:
+            self._select()
+
+
 class DeathBySea(AppState):
     def __init__(self, app):
         self.app = app
@@ -12,10 +67,13 @@ class DeathBySea(AppState):
 
     def process_input(self, event):
         if event.type == pygame.KEYUP and event.key == pygame.K_ESCAPE:
-            self.next_state = ("GoodBye", None)
+            self.next_state = ("MainMenu", None)
 
 
 class InGame(AppState):
+    def __init__(self, app):
+        super(InGame, self).__init__(app)
+        self.reset()
 
     def process(self):
         self.player.process(self.safehouse)
