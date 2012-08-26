@@ -210,7 +210,7 @@ class Safehouse(object):
     def reset(self):
         self.color = random.choice(Safehouse.colors)
         # fill sprite wiht a color
-        self.sprite = fill_with_color(self.orig_sprite, self.color, 50)
+        self.sprite = fill_with_color(self.orig_sprite, self.color, 0)
 
     def draw(self, surface, player):
         surface.blit(self.sprite, self.r.move(-23, -13))

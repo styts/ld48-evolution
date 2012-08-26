@@ -110,6 +110,11 @@ class DeathBySea(AppState):
 class InGame(AppState):
     def __init__(self, app):
         super(InGame, self).__init__(app)
+
+        self.grounds = []
+        for i in xrange(1, 5):
+            self.grounds.append(pygame.image.load(resource_path('data/sprites/ground/%s.png' % i)).convert())
+
         self.reset()
 
     def resume(self, arg):
@@ -185,7 +190,7 @@ class InGame(AppState):
         while True:  # don't allow fruits inside the safehouse
             x = random.randint(0, self.app.screen_w)
             y = random.randint(0, self.app.screen_h)
-            if not self.safehouse.r.colliderect(pygame.Rect(x, y, 24, 24)) and y > 42:  # make hud visible
+            if not self.safehouse.r.inflate(30, 30).colliderect(pygame.Rect(x, y, 24, 24)) and y > 42:  # make hud visible
                 break
 
         name = Edible.colors.keys()[random.randint(0, Edible.colors.keys().__len__() - 1)]
@@ -197,6 +202,14 @@ class InGame(AppState):
         for i in xrange(10):
             self._spawn_edible()
 
+    def _reset_bg(self):
+        self.background.fill((172, 168, 157))
+        for i in xrange(1, 20):  # we need 20?
+            s = random.choice(self.grounds)
+            x = random.randint(0, self.app.screen_w - 30)
+            y = random.randint(42, self.app.screen_h - 30)
+            self.background.blit(s, (x, y))
+
     def new_level(self):
         self.sea_counter = FLOOD_TIME * 30
         #self.sea.x = -150
@@ -204,7 +217,8 @@ class InGame(AppState):
         #self.sea.reset()
         #self.bird.state = "PASSIVE"
         #self.player.reset_color()
-
+        self._reset_bg()
+        
         self.sea.reset()
         self.bird.reset()
         self._playa_reset()
@@ -214,7 +228,7 @@ class InGame(AppState):
 
     def reset(self):
         self.background = pygame.Surface(self.app.screen.get_size())
-        self.background.fill((200, 200, 200))
+        self._reset_bg()
 
         self.sea = Sea(self.app)
         self.bird = Bird()
