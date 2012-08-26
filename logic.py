@@ -4,10 +4,11 @@ import math
 import random
 
 SPAWN_RATE = 40  # lower means more food
-FLOOD_TIME = 6  # seconds till flood
+FLOOD_TIME = 20  # seconds till flood
 
 PLAYER_LIVES = 3  # maximums
 BIRD_LIVES = 5
+DIFFICULTY = 2
 
 
 class HUD(object):
@@ -109,7 +110,7 @@ class Bird(object):
         # sh = self.shadows[self._i]
         # screen.blit(sh, (self.x - 300 + 23, 200 + 23))
         spr = self.sprites[self._i]
-        screen.blit(spr, (self.x - 300, 200))
+        screen.blit(spr, (self.x - 300, 150))
 
     def reset(self):
         self.state = "PASSIVE"
@@ -194,27 +195,38 @@ class Sea(object):
 
 
 class Safehouse(object):
-    colors = [
-        (120, 0, 0),
-        (0, 120, 0),
-        (0, 0, 120),
-        (0, 120, 120),
-        (120, 0, 120),
-        (120, 120, 0),
-        (0, 180, 180),
-        (180, 0, 180),
-        (180, 180, 0),
-    ]
+    # colors = [
+    #     (120, 0, 0),
+    #     (0, 120, 0),
+    #     (0, 0, 120),
+    #     (0, 120, 60),
+    #     (120, 0, 60),
+    #     (120, 60, 0),
+    #     (0, 120, 120),
+    #     (120, 0, 120),
+    #     (120, 120, 0),
+    # ]
     a = 110  # side of it
 
-    def __init__(self, x, y):
+    def __init__(self, x, y, diffuculty):
         self.r = pygame.Rect(x, y, Safehouse.a, Safehouse.a)
         self.lock = pygame.image.load(resource_path('data/sprites/lock.png')).convert_alpha()
         self.invis = pygame.image.load(resource_path('data/sprites/invisibility.png')).convert_alpha()
         self.orig_sprite = pygame.image.load(resource_path('data/sprites/safehouse.png')).convert_alpha()
+        self.diffuculty = diffuculty
 
     def reset(self):
-        self.color = random.choice(Safehouse.colors)
+        #self.color = random.choice(Safehouse.colors)
+        self.color = [0, 0, 0]
+        n = random.randint(1, self.diffuculty)  # needed to collect
+        vs = Edible.colors.values()
+        vs.remove(Edible.colors['blacky'])
+        for i in xrange(0, n):
+            c = random.choice(vs)
+            for j in xrange(0, 3):
+                v = self.color[j] + c[j]
+                self.color[j] = max(0, min(255, v))
+        self.color = tuple(self.color)
         # fill sprite wiht a color
         self.sprite = fill_with_color(self.orig_sprite, self.color, 0)
 
@@ -228,7 +240,7 @@ class Safehouse(object):
 
 
 class Edible(object):
-    colors = {'cherry': (50, -20, -20), 'berry': (-20, -20, 50), 'lime': (-20, 50, -20), 'blacky': (-50, -50, -50)}
+    colors = {'cherry': (80, -0, -0), 'berry': (-0, -0, 80), 'lime': (-0, 80, -0), 'blacky': (-40, -40, -40)}
     #colors = {'cherry': (40, -0, -0), 'berry': (-0, -0, 40), 'lime': (-0, 40, -0), 'blacky': (-40, -40, -40)}
     sprites = {'cherry': pygame.image.load(resource_path('data/sprites/cherry.png')),
                'berry': pygame.image.load(resource_path('data/sprites/berry.png')),

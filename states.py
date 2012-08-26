@@ -174,6 +174,11 @@ class InGame(AppState):
             l = self.hud.die("player")
             self.next_state = ("DeathBySea", l)
 
+        # "fastening"
+        if self.player.is_safe() and (self.player.camouflage(self.safehouse.color) == 100):
+            if self.sea_counter > 0 and self.sea.state == "PASSIVE":
+                self.sea_counter = 0
+
         return super(InGame, self).process()
 
     def _evaluate(self):
@@ -226,6 +231,7 @@ class InGame(AppState):
         self._reset_edibles()
 
     def reset(self):
+        difficulty = DIFFICULTY
         self.background = pygame.Surface(self.app.screen.get_size())
         self._reset_bg()
 
@@ -234,7 +240,7 @@ class InGame(AppState):
         self.hud = HUD(self.app)
 
         self._playa_reset()
-        self.safehouse = Safehouse(self.app.screen_w / 2 - Safehouse.a / 2, self.app.screen_h / 2 - Safehouse.a / 2)
+        self.safehouse = Safehouse(self.app.screen_w / 2 - Safehouse.a / 2, self.app.screen_h / 2 - Safehouse.a / 2, difficulty)
 
         self.new_level()
 
