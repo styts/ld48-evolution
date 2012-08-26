@@ -70,12 +70,15 @@ class MenuMain(AppState):
 
     def _move_down(self):
         self.cur_item = self.cur_item + 1 if self.cur_item < self.items.__len__() - 1 else 0
+        self.app.audman.sfx("key")
 
     def _move_up(self):
         self.cur_item = self.cur_item - 1 if self.cur_item >= 1 else self.items.__len__() - 1
+        self.app.audman.sfx("key")
 
     def _select(self):
         self.next_state = self.next_states[self.cur_item]
+        self.app.audman.sfx("key")
 
     def process_input(self, event):
         if event.type == pygame.KEYUP and event.key == pygame.K_UP:
@@ -257,7 +260,7 @@ class InGame(AppState):
         self.new_level()
 
     def _playa_reset(self):
-        self.player = Player(self.app.screen_w / 2 - 32, self.app.screen_h / 2 - 32, self.difficulty)
+        self.player = Player(self.app.screen_w / 2 - 32, self.app.screen_h / 2 - 32, self.difficulty, self.app)
         self.player.reset_color()
 
     def process_input(self, event):

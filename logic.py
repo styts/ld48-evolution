@@ -276,7 +276,8 @@ class Edible(object):
 class Player(object):
     orig_color = (0, 0, 0)
 
-    def __init__(self, x, y, diffuculty):
+    def __init__(self, x, y, diffuculty, app):
+        self.app = app
         self.sprite = pygame.image.load(resource_path("data/sprites/player.png")).convert_alpha()
         self.sprite2 = pygame.image.load(resource_path("data/sprites/player2.png")).convert_alpha()
         self.x = x
@@ -358,6 +359,7 @@ class Player(object):
         self.y_vel += y_acc
         self.angle = math.degrees(math.atan2(self.x_vel, self.y_vel) - math.pi / 2)
         self._i = not self._i
+        #self.app.audman.sfx("walk")
 
     def get_rect(self):
         return pygame.Rect(self.x, self.y, self.sprite.get_width(), self.sprite.get_height())

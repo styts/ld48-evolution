@@ -2,6 +2,40 @@ import pygame
 import os
 from utils import resource_path
 from states import *
+import glob
+
+
+class ResourceManager():
+    LOCATION_SOUNDS = resource_path("data/sfx")
+
+    def __init__(self, app):
+        self.app = app
+        self._sounds = {}
+        self._load_all()
+
+    def _load_all(self):
+        ## load sfx
+        ext = ".wav"
+        for fn in glob.glob(ResourceManager.LOCATION_SOUNDS + "/*%s" % ext):
+            bn = os.path.basename(fn).replace(ext, "")
+            sound = pygame.mixer.Sound(fn)
+            self._sounds[bn] = sound
+
+    def get_sound(self, name):
+        return self._sounds[name]
+
+
+class AudioManager:
+    def __init__(self, app):
+        self.app = app
+        self.channels = []
+        c = pygame.mixer.Channel(0)
+        self.channels.append(c)
+
+    def sfx(self, name, channel_nr=0):
+        sound = self.app.resman.get_sound(name)
+        channel = self.channels[channel_nr]
+        channel.play(sound)
 
 
 class App():
@@ -36,6 +70,9 @@ class App():
         self._appstates.append(DeathBySea(self))
         self._appstates.append(Victory(self))
         self._appstates.append(Defeat(self))
+
+        self.resman = ResourceManager(self)
+        self.audman = AudioManager(self)
 
         #self.appstate = self._get_appstate("InGame")
         #self.appstate.reset()
