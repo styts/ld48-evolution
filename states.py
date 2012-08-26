@@ -138,17 +138,16 @@ class InGame(AppState):
         if r == 0:
             self._spawn_edible()
 
-        self.safehouse.process()
         self.bird.process()
         sea_x = self.sea.process()
         if sea_x > self.player.get_rect().x and self.sea.state == "FLOODING":
             if self.bird.state == "PASSIVE":
                 self.bird.show()
         if self.bird.state == "SLIDE_IN" and not self.bird.evaluated:
-            self.player.reset_color()
-            self._sh_reset()
-            self._reset_edibles()
             self._evaluate()
+            self.player.reset_color()
+            self.safehouse.reset()
+            self._reset_edibles()
         #print self.bird.state, "secount", self.sea_counter, self.sea.state, self.sea.sea_alpha
 
         if self.bird.state == "PASSIVE" and not self.sea_counter:
@@ -205,11 +204,11 @@ class InGame(AppState):
         #self.sea.reset()
         #self.bird.state = "PASSIVE"
         #self.player.reset_color()
-        
+
         self.sea.reset()
         self.bird.reset()
         self._playa_reset()
-        self._sh_reset()
+        self.safehouse.reset()
 
         self._reset_edibles()
 
@@ -222,16 +221,13 @@ class InGame(AppState):
         self.hud = HUD(self.app)
 
         self._playa_reset()
-        self._sh_reset()
+        self.safehouse = Safehouse(self.app.screen_w / 2 - Safehouse.a / 2, self.app.screen_h / 2 - Safehouse.a / 2)
 
         self.new_level()
 
     def _playa_reset(self):
         self.player = Player(self.app.screen_w / 2 - 32, self.app.screen_h / 2 - 32)
         self.player.reset_color()
-
-    def _sh_reset(self):
-        self.safehouse = Safehouse(self.app.screen_w / 2 - Safehouse.a / 2, self.app.screen_h / 2 - Safehouse.a / 2)
 
     def process_input(self, event):
         # quit to menu - ESC

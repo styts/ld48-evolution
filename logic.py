@@ -1,4 +1,4 @@
-from utils import resource_path
+from utils import resource_path, fill_with_color
 import pygame
 import math
 import random
@@ -26,8 +26,8 @@ class HUD(object):
         self.init()
 
     def init(self):
-        self.player_lives = 2 #PLAYER_LIVES
-        self.bird_lives = 2 #BIRD_LIVES
+        self.player_lives = PLAYER_LIVES
+        self.bird_lives = BIRD_LIVES
 
     def die(self, who):
         if who == "player":
@@ -65,7 +65,7 @@ class HUD(object):
         max_w = 150
         w = max_w / FLOOD_TIME * (fl_left)
         c = (42, 74, 164)
-        if w:
+        if fl_left > 0:
             pygame.draw.rect(screen, c, pygame.Rect(255, 5, w, 25))
 
 
@@ -199,19 +199,22 @@ class Safehouse(object):
         (180, 0, 180),
         (180, 180, 0),
     ]
-    a = 100  # side of it
+    a = 110  # side of it
 
     def __init__(self, x, y):
-        self.color = random.choice(Safehouse.colors)
         self.r = pygame.Rect(x, y, Safehouse.a, Safehouse.a)
         self.lock = pygame.image.load(resource_path('data/sprites/lock.png')).convert_alpha()
         self.invis = pygame.image.load(resource_path('data/sprites/invisibility.png')).convert_alpha()
+        self.orig_sprite = pygame.image.load(resource_path('data/sprites/safehouse.png')).convert_alpha()
 
-    def process(self):
-        pass
+    def reset(self):
+        self.color = random.choice(Safehouse.colors)
+        # fill sprite wiht a color
+        self.sprite = fill_with_color(self.orig_sprite, self.color, 50)
 
     def draw(self, surface, player):
-        pygame.draw.rect(surface, self.color, self.r)
+        surface.blit(self.sprite, self.r.move(-23, -13))
+        #pygame.draw.rect(surface, self.color, self.r, 1)
         if player.is_safe():
             surface.blit(self.lock, (self.r.x + self.r.width - 24, self.r.y + self.r.height - 24))
         if player.is_invisible(self.color):

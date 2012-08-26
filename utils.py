@@ -1,5 +1,19 @@
 import sys
 import os
+import pygame
+
+
+def fill_with_color(surf, color, alpha_decr=0):
+    s = surf.copy()
+    s.fill(color, None, pygame.BLEND_RGBA_MULT)
+
+    sprite = s
+    for a in xrange(sprite.get_width()):
+        for b in xrange(sprite.get_height()):
+            c = sprite.get_at((a, b))
+            s = (c.r, c.g, c.b, max(0, c.a - alpha_decr) if c.r or c.g or c.b else 0)
+            sprite.set_at((a, b), s)
+    return sprite
 
 
 def resource_path(relative):
