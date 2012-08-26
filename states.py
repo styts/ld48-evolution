@@ -51,6 +51,7 @@ class MenuMain(AppState):
         self.cur_item = 0
         self.c = (248, 188, 27)
         self.c_sel = (124, 111, 27)
+        self.c_sh = (149, 140, 117)
 
     def draw(self):
         self.app.screen.blit(self.surface, (0, 0))
@@ -62,6 +63,8 @@ class MenuMain(AppState):
             c = self.c if i != self.cur_item else self.c_sel
             item = self.items[i]
             ren = self.app.font_big.render(item, False, c)
+            sh_ren = self.app.font_big.render(item, False, self.c_sh)
+            self.app.screen.blit(sh_ren, (x + 3 - ren.get_width() / 2, y + 3))
             self.app.screen.blit(ren, (x - ren.get_width() / 2, y))
             y += a
 
