@@ -258,7 +258,8 @@ class Player(object):
         self.reset_color()
 
     def reset_color(self):
-        self.color = (0, 0, 0)
+        self.color = (50, 50, 50)
+        self.col_sprite = fill_with_color(self.sprite, self.color, 0)
 
     def process(self, safehouse):
         keys = pygame.key.get_pressed()
@@ -330,12 +331,13 @@ class Player(object):
 
     def eat(self, edible):
         def n(colval):
-            return max(0, min(255, colval))
+            return max(50, min(255, colval))
         r, g, b = edible.color
         sr, sg, sb = self.color
         self.color = (n(sr + r), n(sg + g), n(sb + b))
+        self.col_sprite = fill_with_color(self.sprite, self.color, 0)
 
     def draw(self, app):
-        rot_sprite = pygame.transform.rotate(self.sprite, self.angle)
-        rot_sprite.fill(self.color, None, pygame.BLEND_RGBA_MULT)
-        app.screen.blit(rot_sprite, (self.x, self.y))
+        col_rot_sprite = pygame.transform.rotate(self.col_sprite, self.angle)
+        #col_rot_sprite = fill_with_color(rot_sprite, self.color, 0)
+        app.screen.blit(col_rot_sprite, (self.x, self.y))

@@ -212,13 +212,9 @@ class InGame(AppState):
 
     def new_level(self):
         self.sea_counter = FLOOD_TIME * 30
-        #self.sea.x = -150
-        #self.sea.state = "PASSIVE"
-        #self.sea.reset()
-        #self.bird.state = "PASSIVE"
-        #self.player.reset_color()
+
         self._reset_bg()
-        
+
         self.sea.reset()
         self.bird.reset()
         self._playa_reset()
